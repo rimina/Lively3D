@@ -125,10 +125,14 @@ SOFTWARE.
 			@param {string} permission Literal for permission.
 			@param {GLGE.Object} glge_object The GLGE Object in which the permission is applied.
 		*/
+    
+    //TODO: FIX
 		this.AddPermission = function(permission, glge_object){
 			if (!Permissions[permission]){
 				Permissions[permission] = [];
 			}
+      
+      //EI VOI LAITTAA GLGE OBJECTEJA TÄNNE
 			Permissions[permission].push(glge_object);
 		}
 		
@@ -138,6 +142,8 @@ SOFTWARE.
 			@param {GLGE.Object} glge_object The GLGE object to be checked for permission.
 			@return {boolean} true if object has the permission, otherwise false.
 		*/
+    
+    //TODO: FIX
 		this.CheckPermission = function(permission, glge_object){
 			
 			if ( Permissions[permission] ){
@@ -195,6 +201,7 @@ SOFTWARE.
 		/**
 			Gets application material where js events are bound.
 		*/
+    //TODO: EI TARVITA
 		this.GetWindowMaterial = function(){
 			return WindowObject.children[2].getMaterial();
 		}

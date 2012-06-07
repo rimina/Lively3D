@@ -38,43 +38,33 @@ var Lively3D = (function(Lively3D){
 	var canvasName = "";
 	var canvasDefault = "canvas";
 	
-	/**
-		@namespace Holds GLGE related variables.
-	*/
-	Lively3D.GLGE = {
-		/** GLGE Document */
-		document: null,
-		/** GLGE Renderer */
-		renderer: null
-	};
-	
 	var Scenes = [];
 	var CurrentScene = 0;
 	
 	var DefaultScene = {
-		Id:'mainscene', 
+		Id:'mainscene',
+    
 		BindCanvasEvents: function(){
 			console.log("binding room events")
 		},
+    
 		RenderingFunction: function(){},
+    
 		GLGEObject: "DefaultSceneObject.children[0]",
 		GLGEGroup: "DefaultSceneObject",
+    
 		Open: function(app, camera){
 			app.GetWindowObject().setLookat(null);
 			app.GetWindowObject().setRotZ(0).setRotX(0).setRotY(Math.PI);
 			app.GetWindowObject().setScale(3,3,3);
 			app.GetWindowObject().setLoc(app.GetSceneObject(0).getLocX(),app.GetSceneObject(0).getLocY(),app.GetSceneObject(0).getLocZ());
 		},
+    
 		Close: function(app, camera){
 			app.GetSceneObject(0).setLoc(app.GetWindowObject().getLocX(),app.GetWindowObject().getLocY(),app.GetWindowObject().getLocZ());
 		}
+    
 	};
-	
-
-	
-	Lively3D.GLGE.draggableObject = null;
-	Lively3D.GLGE.hoverObject = null;
-	Lively3D.GLGE.clickedObject = null;
 	
 	/**
 		@namespace Permission literals used in the environment.
@@ -102,9 +92,6 @@ var Lively3D = (function(Lively3D){
 		MAXIMIZE: 'maximize'
 	};
 	
-	var keys = null;
-	var mouse = null;
-	
 	var Applications = [];
 	
 	
@@ -123,60 +110,8 @@ var Lively3D = (function(Lively3D){
 		else{
 			canvasName = canvas;
 		}
-		this.GLGE.document = new GLGE.Document();
 	
 		var canvas = document.getElementById(canvasName);
-		this.GLGE.document.onLoad = function() {
-				
-			Lively3D.GLGE.renderer = new GLGE.Renderer(canvas, null, {alpha:true,depth:true,stencil:true,antialias:false,premultipliedAlpha:true, preserveDrawingBuffer: true});
-			
-			Scenes.push( new Lively3D.Scene().SetScene(Lively3D.GLGE.document.getElement(DefaultScene.Id)).SetModel(DefaultScene));
-			
-			Lively3D.GLGE.renderer.setScene(Scenes[CurrentScene].GetScene());
-		
-			var lasttime=0;
-			var now;
-			
-			function animLoop(){
-				requestAnimFrame(animLoop, canvas);
-				now=parseInt(new Date().getTime());
-				
-				Scenes[CurrentScene].GetModel().RenderingFunction(now, lasttime);
-				
-				Lively3D.GLGE.renderer.render();
-				lasttime=now;					
-			}
-					
-			animLoop();
-			
-			Lively3D.GLGE.document.onLoad = SceneLoader;
-			
-			
-		}
-
-		this.GLGE.document.load('lively3d.xml');
-		keys = new GLGE.KeyInput();
-		mouse = new GLGE.MouseInput(canvas);
-		DefaultCanvasEvents(canvas);
-		
-		$(document).keydown(function(e){
-            if ( Lively3D.GLGE.clickedObject != null ){
-				Lively3D.GLGE.clickedObject.fireEvent("keydown", e);
-            }
-        });
-
-        $(document).keyup(function(e){
-            if ( Lively3D.GLGE.clickedObject != null ){
-                    Lively3D.GLGE.clickedObject.fireEvent("keyup", e);
-            }
-        });
-		
-		$(document).keypress(function(e){
-            if ( Lively3D.GLGE.clickedObject != null ){
-                    Lively3D.GLGE.clickedObject.fireEvent("keypress", e);
-            }
-        });
-
 	}
 	
 	/**
@@ -270,6 +205,7 @@ var Lively3D = (function(Lively3D){
 			group: wrapGroup
 		}
 		
+    //TODO: REDO
 		livelyapp.AddSceneObject(sceneObj);
 		
 		
@@ -297,7 +233,7 @@ var Lively3D = (function(Lively3D){
 		livelyapp.AddPermission(this.PERMISSIONS.CLOSE, closebutton);
 		livelyapp.AddPermission(this.PERMISSIONS.MAXIMIZE, progbar);
 		
-		
+		//TODO: REDO
 		for ( var i = 1; i < Scenes.length; ++i ){
 			var model = Scenes[i].GetModel().CreateApplication(content);
 			livelyapp.AddSceneObject(model);	
@@ -326,6 +262,8 @@ var Lively3D = (function(Lively3D){
 		Opens given Lively3D Application in every 3D-scene.
 		@param app Lively3D Application
 	*/
+  
+  //TODO: REDO
 	Lively3D.Open = function(app){
 		
 		for ( var i in Scenes ){
@@ -349,9 +287,11 @@ var Lively3D = (function(Lively3D){
 		Closes given Lively3D Application in every 3D-scene.
 		@param app Lively3D Application
 	*/
+  
+  //TODO: REDO
 	Lively3D.Close = function(app){
 
-	
+    //FIX
 		app.GetWindowObject().setScale(1,1,1);
 		
 		if( app.isMaximized() ){
@@ -359,8 +299,11 @@ var Lively3D = (function(Lively3D){
 		}
 		
 		app.ToggleWindowObject();
-		this.GLGE.clickedObject = null;
+    
+		//this.GLGE.clickedObject = null;
+    
 		app.Close();
+    
 		for ( var i in Scenes ){
 			if ( Scenes.hasOwnProperty(i) ){
 				Scenes[i].GetScene().addChild(app.GetSceneObject(i));
@@ -378,6 +321,8 @@ var Lively3D = (function(Lively3D){
 		Maximizes given Lively3D Application in the current scene.
 		@param app Lively3D Application 
 	*/
+  
+  //TODO: REDO
 	Lively3D.Maximize = function(app){
 			
 		var scene = Scenes[CurrentScene].GetScene();
@@ -397,6 +342,8 @@ var Lively3D = (function(Lively3D){
 		Minimizes given Lively3D Application to the original location and size.
 		@param app Lively3D Application
 	*/
+  
+  //TODO: REDO
 	Lively3D.Minimize = function(app){
 		app.GetWindowObject().setLoc(app.OldLocation[0],app.OldLocation[1],app.OldLocation[2]).setScale(3,3,3);
 		app.Minimize();
@@ -412,6 +359,7 @@ var Lively3D = (function(Lively3D){
 		
 		for ( var i in Applications ){
 			if ( Applications.hasOwnProperty(i)){
+        //EI VOI VERRATA GLGE_OBJECTIIN, KUN SELLAISTA EI OLE
 				if ( Applications[i].GetCurrentSceneObject() === glge_object ){
 					return Applications[i];
 					
@@ -430,6 +378,8 @@ var Lively3D = (function(Lively3D){
 		@param glge_object The GLGE Object which represents the target application.
 		@param event Javascript event-object.
 	*/
+  
+  //TODO: REDO EVENT FIRING 
 	Lively3D.FireEvent= function(eventname, app, textureCoordinates,glge_object, event ){
 	
 		
@@ -458,32 +408,6 @@ var Lively3D = (function(Lively3D){
 		}
 	}
 	
-	/**
-		Picks mouse location within 3D scene. 
-		@param that this context
-		@param mouseevent JavasScript mouse event.
-		@returns Location object which includes GLGE object of the coordinates, distance of the object, texture coordinates etc.
-	*/
-	Lively3D.PickLocation = function(that, mouseevent){
-		var pos = findPos(that);
-		var x = mouseevent.pageX - pos.x;
-		var y = mouseevent.pageY - pos.y;
-		
-		var loc = Scenes[CurrentScene].GetScene().pick(x, y)
-		
-		return loc;
-	}
-	
-	var findPos = function(obj) {
-		var curleft = curtop = 0;
-		if (obj.offsetParent) {
-			do {
-				curleft += obj.offsetLeft;
-				curtop += obj.offsetTop;
-			} while (obj = obj.offsetParent);
-			return { x: curleft, y: curtop };
-		}
-	}
 	
 	/**
 		Gets index of the current scene.
@@ -577,151 +501,6 @@ var Lively3D = (function(Lively3D){
 		Lively3D.UI.ShowLoadCompleted();
 	}
 	
-	
-	var DefaultCanvasEvents = function(canvas){
-		canvas.onclick = function(e){
-			
-			var loc = Lively3D.PickLocation(this,e);
-			if (loc != null){
-				var app = Lively3D.GetApplication(loc.object.parent);
-
-				if ( app != null ){
-
-					if ( app.CheckPermission(Lively3D.PERMISSIONS.CLOSE, loc.object)){
-						Lively3D.Close(app);
-					}
-					
-					if ( !app.isClosed() ){
-						Lively3D.FireEvent('click', app, loc.texture, loc.object);
-					}
-				}
-			}
-		}
-		
-		canvas.ondblclick = function(e){
-			var loc = Lively3D.PickLocation(this, e);
-			console.log("dblclick with loc: " + loc);
-			if ( loc != null ){
-				var app = Lively3D.GetApplication(loc.object.parent);
-					
-				if ( app != null){
-					
-					if ( app.CheckPermission(Lively3D.PERMISSIONS.OPEN, loc.object) ){
-						Lively3D.Open(app);
-					}
-					else if (app.CheckPermission(Lively3D.PERMISSIONS.CLOSE, loc.object) ){
-						Lively3D.Close(app);
-					}
-					
-					else if (app.CheckPermission(Lively3D.PERMISSIONS.MAXIMIZE, loc.object)){
-						if ( !app.isMaximized() ){
-							Lively3D.Maximize(app);
-						}
-						else{
-							Lively3D.Minimize(app);
-						}
-					}
-				}
-			}
-		}
-		
-		canvas.onmousedown = function(e){
-			
-			var loc = Lively3D.PickLocation(this,e);
-			if ( loc != null ){
-				var app = Lively3D.GetApplication(loc.object.parent);
-				
-				if ( app != null ){
-					if ( e.which == 3 ){
-						if ( !app.isClosed() ){
-							Lively3D.FireEvent('rightclick', app, loc.texture, loc.object);
-						}	
-					}
-					else{
-						if ( app.CheckPermission(Lively3D.PERMISSIONS.DRAG, loc.object) && (app.isClosed() || !app.isMaximized())){
-							Lively3D.GLGE.draggableObject = app.GetCurrentSceneObject();
-						}
-						if ( !app.isClosed() ){
-							Lively3D.GLGE.clickedObject = app.GetWindowMaterial();
-							Lively3D.FireEvent('mousedown', app, loc.texture, loc.object);
-						}
-					}
-				}
-			}
-		}
-		
-		canvas.onmousemove = function(e){
-			if( Lively3D.GLGE.draggableObject != null ){
-				var pos = findPos(this);
-				var x = e.pageX - pos.x;
-				var y = e.pageY - pos.y;
-					
-				var ray = Scenes[CurrentScene].GetScene().makeRay(x, y);
-				var location = [ray.origin[0] - ray.coord[0]*120,ray.origin[1] - ray.coord[1]*120,ray.origin[2] - ray.coord[2]*120];
-				
-				Lively3D.GLGE.draggableObject.setLocX(location[0]);
-				Lively3D.GLGE.draggableObject.setLocY(location[1]);
-			
-				
-			}
-				
-			else{
-				
-				var loc = Lively3D.PickLocation(this, e);
-				if ( loc != null ){
-					var app = Lively3D.GetApplication(loc.object.parent);
-					
-					if ( loc.object && app != Lively3D.GLGE.hoverObject ){
-							
-
-						if ( app != null ){ 
-							Lively3D.FireEvent('mouseover', app);
-						}
-						
-						if ( Lively3D.GLGE.hoverObject ){
-							Lively3D.FireEvent('mouseout', Lively3D.GLGE.hoverObject);
-						}
-						
-						Lively3D.GLGE.hoverObject = app;
-					}
-					
-					if ( app != null && !app.isClosed() ){
-						Lively3D.FireEvent('mousemove', app, loc.texture, loc.object);
-					}
-				}
-			}
-		};
-		
-		canvas.onmouseup = function(e){
-			if ( Lively3D.GLGE.draggableObject != null ){
-				Lively3D.GLGE.draggableObject = null;
-			}
-			else{
-					
-				var loc = Lively3D.PickLocation(this, e);
-				if ( loc != null ){
-					var app = Lively3D.GetApplication(loc.object.parent);
-					
-					if ( app != null && !app.isClosed() ){
-							
-						Lively3D.FireEvent('mouseup', app, loc.texture, loc.object);
-					}
-				}
-			}
-		};
-		
-		canvas.onmousewheel = function(e){
-			var loc = Lively3D.PickLocation(this, e);
-			if ( loc != null ){
-				var app = Lively3D.GetApplication(loc.object.parent);
-								
-				if ( app != null && !app.isClosed() ){
-					Lively3D.FireEvent("mousewheel", app, loc.texture, loc.object, e);
-				}
-			}
-		};
-	}
-	
 	var SceneBuffer = [];
 	
 	/**
@@ -742,6 +521,7 @@ var Lively3D = (function(Lively3D){
 		Lively3D.LoadResources(scene);
 	}
 	
+  //TODO: POISTA
 	var SceneLoader = function(url){
 		
 		var parsedURL = parseUrl(url);
@@ -783,14 +563,14 @@ var Lively3D = (function(Lively3D){
 		}
 	}
 	
+  //TODO: REDO
 	var AddAppsToScene = function(scene){
 		 
 		//scene.AppGlobals(Lively3D);
 		for (var i in Applications){
 			if ( Applications.hasOwnProperty(i)){
 				var model = scene.CreateApplication(Applications[i].GetWindowObject().children[2].getMaterial());
-				//scene.AddApp();
-				//Applications[i][scene.AppVariable] = model;
+
 				Applications[i].AddSceneObject(model);
 				Applications[i].AddPermission(Lively3D.PERMISSIONS.OPEN, Applications[i].GetSceneObject(Scenes.length - 1));
 			}
@@ -806,29 +586,13 @@ var Lively3D = (function(Lively3D){
 	}
 	
 	/**
-		Gets GLGE KeyInput object.
-		@return KeyInput object.
-	*/
-	Lively3D.GetKeys = function(){
-		return keys;
-	}
-	
-	/**
 		Gets currently loaded applications.
 		@returns Array of applications.
 	*/
 	Lively3D.GetApplications = function(){
 		return Applications;
 	}
-	
-	/**
-		Gets GLGE MouseInput object.
-		@return MouseInput Object.
-	*/
-	Lively3D.GetMouse = function(){
-		return mouse;
-	}
-	
+		
 	/**
 		Switches to the next scene. If current scene is the last scene, switches to the first scene.
 	*/
@@ -850,10 +614,6 @@ var Lively3D = (function(Lively3D){
 		for ( var i in Applications){
 			Applications[i].SetCurrentSceneObject(CurrentScene);
 		}
-				
-		Lively3D.GLGE.renderer.setScene(Scenes[CurrentScene].GetScene());
-		DefaultCanvasEvents(document.getElementById(canvasName));
-		Scenes[CurrentScene].GetModel().BindCanvasEvents(document.getElementById(canvasName));
 		
 	}
 	
