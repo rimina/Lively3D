@@ -118,56 +118,6 @@ SOFTWARE.
 			maximized = false;
 		}
 		
-		var Permissions = [];
-		
-		/**
-			Adds new permission for application.
-			@param {string} permission Literal for permission.
-			@param {GLGE.Object} glge_object The GLGE Object in which the permission is applied.
-		*/
-    
-    //TODO: FIX
-		this.AddPermission = function(permission, glge_object){
-			if (!Permissions[permission]){
-				Permissions[permission] = [];
-			}
-      
-      //EI VOI LAITTAA GLGE OBJECTEJA TÄNNE
-			Permissions[permission].push(glge_object);
-		}
-		
-		/**
-			Checks that the given object has the requested permission.
-			@param {string} permission Literal for permission.
-			@param {GLGE.Object} glge_object The GLGE object to be checked for permission.
-			@return {boolean} true if object has the permission, otherwise false.
-		*/
-    
-    //TODO: FIX
-		this.CheckPermission = function(permission, glge_object){
-			
-			if ( Permissions[permission] ){
-				for ( var i in Permissions[permission] ){
-					if ( Permissions[permission].hasOwnProperty(i)){
-						if ( Permissions[permission][i] instanceof GLGE.Group ){
-							var objs = Permissions[permission][i].children;
-							for ( var j in objs ){
-								if ( objs[j] === glge_object ){
-									return true;
-								}
-							}
-						}
-						
-						else if ( Permissions[permission][i] === glge_object ){
-							return true;
-						}
-					}
-				}
-			}
-				
-			return false;
-		}
-		
 		var SceneObjects = [];
 		/**
 			Add new Scene object to the application.

@@ -37,6 +37,28 @@ var Lively3D = (function(Lively3D){
 	
 	var canvasName = "";
 	var canvasDefault = "canvas";
+  
+  /**
+    @namespace Holds THREE.JS related variables.
+  */
+  Lively3D.THREE = {
+    /** Three.js Renderer */
+    renderer: null,
+    /** Three.js Camera */
+    camera: null,
+    /** Three.js Scene */
+    scene: null
+  };
+  
+  /**
+    @namespace Holds WIDGET3D related variables.
+  */
+  Lively3D.WIDGET = {
+    /** Scene window */
+    mainWindow : null,
+    /** App window */
+    display : null
+  };
 	
 	var Scenes = [];
 	var CurrentScene = 0;
@@ -44,28 +66,25 @@ var Lively3D = (function(Lively3D){
 	var DefaultScene = {
 		Id:'mainscene',
     
-		BindCanvasEvents: function(){
-			console.log("binding room events")
-		},
-    
 		RenderingFunction: function(){},
     
-		GLGEObject: "DefaultSceneObject.children[0]",
-		GLGEGroup: "DefaultSceneObject",
+		//GLGEObject: "DefaultSceneObject.children[0]",
+		//GLGEGroup: "DefaultSceneObject",
     
 		Open: function(app, camera){
-			app.GetWindowObject().setLookat(null);
-			app.GetWindowObject().setRotZ(0).setRotX(0).setRotY(Math.PI);
-			app.GetWindowObject().setScale(3,3,3);
-			app.GetWindowObject().setLoc(app.GetSceneObject(0).getLocX(),app.GetSceneObject(0).getLocY(),app.GetSceneObject(0).getLocZ());
+			//app.GetWindowObject().setLookat(null);
+			//app.GetWindowObject().setRotZ(0).setRotX(0).setRotY(Math.PI);
+			//app.GetWindowObject().setScale(3,3,3);
+			//app.GetWindowObject().setLoc(app.GetSceneObject(0).getLocX(),app.GetSceneObject(0).getLocY(),app.GetSceneObject(0).getLocZ());
 		},
     
 		Close: function(app, camera){
-			app.GetSceneObject(0).setLoc(app.GetWindowObject().getLocX(),app.GetWindowObject().getLocY(),app.GetWindowObject().getLocZ());
+			//app.GetSceneObject(0).setLoc(app.GetWindowObject().getLocX(),app.GetWindowObject().getLocY(),app.GetWindowObject().getLocZ());
 		}
     
 	};
 	
+  //NOT NEEDED
 	/**
 		@namespace Permission literals used in the environment.
 	*/
@@ -112,6 +131,51 @@ var Lively3D = (function(Lively3D){
 		}
 	
 		var canvas = document.getElementById(canvasName);
+    
+    Lively3D.THREE.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true, autoClear: false});
+    Lively3D.THREE.renderer.setClearColorHex( 0xf9f9f9, 1);
+    Lively3D.THREE.renderer.setSize(canvas.width, canvas.height);
+  
+  
+    //MAIN SCENE
+    Lively3D.THREE.scene = new THREE.Scene();
+    
+    //MAIN CAMERA
+    Lively3D.THREE.camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 1, 10000);
+    Lively3D.THREE.camera.position.z = 1600;
+    Lively3D.THREE.scene.add( Lively3D.THREE.camera );
+    
+    Lively3D.THREE.scene.add( new THREE.AmbientLight( 0x404040 ) );
+    
+    Lively3D.WIDGET.mainWindow = THREEJS_WIDGET3D.init(Lively3D.THREE.scene, Lively3D.THREE.renderer, Lively3D.THREE.camera);
+    
+    var material = new THREE.MeshBasicMaterial({
+      color: 0x000000,
+      opacity: 1
+    });
+    
+    var mesh = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000, 10, 10), material);
+    mesh.doubleSided = true;
+    mesh.flipSided = true;
+    
+    Lively3D.WIDGET.display = new WIDGET3D.Window();
+    Lively3D.WIDGET.display.setMesh(mesh);
+    Lively3D.WIDGET.mainWindow.addChild(Lively3D.WIDGET.display);
+    
+    var lasttime=0;
+    var now;
+
+    function animLoop(){
+      //requestAnimFrame(animLoop, canvas);
+      now=parseInt(new Date().getTime());
+      
+      //Scenes[CurrentScene].GetModel().RenderingFunction(now, lasttime);
+      Lively3D.THREE.renderer.render(Lively3D.THREE.scene, Lively3D.THREE.camera);
+      lasttime=now;
+      
+    }
+
+    animLoop();
 	}
 	
 	/**
@@ -133,20 +197,30 @@ var Lively3D = (function(Lively3D){
 		livelyapp.SetStart(app.StartApp);
 	
 		//create appcanvas texture
-		var tex = new GLGE.TextureCanvas();
-		tex.setCanvas(canvas);
-		var layer = new GLGE.MaterialLayer().setMapinput(GLGE.UV1).setMapto(GLGE.M_COLOR).setTexture(tex);
-		var content = new GLGE.Material().addTexture(tex).addMaterialLayer(layer).setSpecular(0);
+    var tex = new THREE.Texture(canvas);
+    var content = new THREE.MeshBasicMaterial({
+      map: tex
+    });
+    var mesh = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000, 10, 10), content);
+    mesh.doubleSided = true;
+    mesh.flipSided = true;
+    
+    Lively3D.WIDGET.display.setMesh(mesh);
+    
+		//var tex = new GLGE.TextureCanvas();
+		//tex.setCanvas(canvas);
+		//var layer = new GLGE.MaterialLayer().setMapinput(GLGE.UV1).setMapto(GLGE.M_COLOR).setTexture(tex);
+		//var content = new GLGE.Material().addTexture(tex).addMaterialLayer(layer).setSpecular(0);
 		
-		AddEventListeners(content, app.EventListeners);
+		//AddEventListeners(content, app.EventListeners);
 		
 		
 		//create cube texture
-		var Apptex = new GLGE.Texture().setSrc('images/app.png');
+		/*var Apptex = new GLGE.Texture().setSrc('images/app.png');
 		layer = new GLGE.MaterialLayer().setMapinput(GLGE.UV1).setMapto(GLGE.M_COLOR).setTexture(Apptex);
-		var newMat = new GLGE.Material().addTexture(Apptex).addMaterialLayer(layer).setSpecular(0);
+		var newMat = new GLGE.Material().addTexture(Apptex).addMaterialLayer(layer).setSpecular(0);*/
 		
-		var progbar = new GLGE.Object();
+		/*var progbar = new GLGE.Object();
 		progbar.setMesh(this.GLGE.document.getElement('ProgTitleBar'));
 		
 		var TitleCanvas = document.createElement('canvas');
@@ -206,7 +280,7 @@ var Lively3D = (function(Lively3D){
 		}
 		
     //TODO: REDO
-		livelyapp.AddSceneObject(sceneObj);
+		livelyapp.AddSceneObject(sceneObj);*/
 		
 		
 		if ( app.GetState ){
@@ -226,23 +300,24 @@ var Lively3D = (function(Lively3D){
 			livelyapp.SetAppClose(app.Close);
 		}
 	
-		livelyapp.hoverText = new GLGE.Text().setText(livelyapp.GetName()).setLoc(livelyapp.GetCurrentSceneObject().getLocX() + 5, livelyapp.GetCurrentSceneObject().getLocY(), livelyapp.GetCurrentSceneObject().getLocZ()).setId('hovertext').setSize(50).setColor('lightblue').setFont('arial').setLookat(Scenes[0].GetScene().camera);
+		//livelyapp.hoverText = new GLGE.Text().setText(livelyapp.GetName()).setLoc(livelyapp.GetCurrentSceneObject().getLocX() + 5, livelyapp.GetCurrentSceneObject().getLocY(), livelyapp.GetCurrentSceneObject().getLocZ()).setId('hovertext').setSize(50).setColor('lightblue').setFont('arial').setLookat(Scenes[0].GetScene().camera);
 	
-		livelyapp.AddPermission(this.PERMISSIONS.DRAG, progbar);
+		/*livelyapp.AddPermission(this.PERMISSIONS.DRAG, progbar);
 		livelyapp.AddPermission(this.PERMISSIONS.DRAG, newObj);
 		livelyapp.AddPermission(this.PERMISSIONS.CLOSE, closebutton);
-		livelyapp.AddPermission(this.PERMISSIONS.MAXIMIZE, progbar);
+		livelyapp.AddPermission(this.PERMISSIONS.MAXIMIZE, progbar);*/
 		
 		//TODO: REDO
-		for ( var i = 1; i < Scenes.length; ++i ){
+		/*for ( var i = 1; i < Scenes.length; ++i ){
 			var model = Scenes[i].GetModel().CreateApplication(content);
 			livelyapp.AddSceneObject(model);	
 		}
-		Scenes[0].GetScene().addObject(wrapGroup);
+		Scenes[0].GetScene().addObject(wrapGroup);*/
 				
 		app.SetLivelyApp(livelyapp);
 		
 		livelyapp.SetCurrentSceneObject(CurrentScene);
+    
 		return livelyapp;
 	}
 
@@ -325,7 +400,7 @@ var Lively3D = (function(Lively3D){
   //TODO: REDO
 	Lively3D.Maximize = function(app){
 			
-		var scene = Scenes[CurrentScene].GetScene();
+		/*var scene = Scenes[CurrentScene].GetScene();
 		var ray = scene.makeRay(window.innerWidth/2, window.innerHeight/2);
 		var FrontOfCamera = [];
 		FrontOfCamera = [ray.origin[0] - ray.coord[0]*11,
@@ -335,7 +410,7 @@ var Lively3D = (function(Lively3D){
 		app.OldLocation = [app.GetWindowObject().getLocX(),app.GetWindowObject().getLocY(),app.GetWindowObject().getLocZ()];
 		app.GetWindowObject().setLoc(FrontOfCamera[0],FrontOfCamera[1],FrontOfCamera[2]).setScale(1,1,1);
 		app.Maximize();	
-		this.GLGE.clickedObject = app.GetWindowMaterial();
+		this.GLGE.clickedObject = app.GetWindowMaterial();*/
 	}
 	
 	/**
@@ -345,9 +420,9 @@ var Lively3D = (function(Lively3D){
   
   //TODO: REDO
 	Lively3D.Minimize = function(app){
-		app.GetWindowObject().setLoc(app.OldLocation[0],app.OldLocation[1],app.OldLocation[2]).setScale(3,3,3);
+		/*app.GetWindowObject().setLoc(app.OldLocation[0],app.OldLocation[1],app.OldLocation[2]).setScale(3,3,3);
 		app.Minimize();
-		this.GLGE.clickedObject = app.GetWindowMaterial();
+		this.GLGE.clickedObject = app.GetWindowMaterial();*/
 	}
 	
 	/**
@@ -485,11 +560,11 @@ var Lively3D = (function(Lively3D){
 		@param app Lively3D Application which is ready for usage.
 	*/
 	Lively3D.AllowAppStart = function(app){
-		for ( var i in Scenes ){
+		/*for ( var i in Scenes ){
 			if ( Scenes.hasOwnProperty(i)){
 				app.AddPermission(this.PERMISSIONS.OPEN, app.GetSceneObject(i));
 			}
-		}
+		}*/
 		if ( app.StateFromDropbox == true ){
 			if ( app.OpenAfterLoad == true){
 				Lively3D.Open(app);
@@ -560,20 +635,6 @@ var Lively3D = (function(Lively3D){
 		}
 		else {
 			return  {url:"", protocol:"",host:"",path:"",file:"",hash:""};
-		}
-	}
-	
-  //TODO: REDO
-	var AddAppsToScene = function(scene){
-		 
-		//scene.AppGlobals(Lively3D);
-		for (var i in Applications){
-			if ( Applications.hasOwnProperty(i)){
-				var model = scene.CreateApplication(Applications[i].GetWindowObject().children[2].getMaterial());
-
-				Applications[i].AddSceneObject(model);
-				Applications[i].AddPermission(Lively3D.PERMISSIONS.OPEN, Applications[i].GetSceneObject(Scenes.length - 1));
-			}
 		}
 	}
 	
