@@ -57,7 +57,9 @@ var Lively3D = (function(Lively3D){
     /** Scene window */
     mainWindow : null,
     /** App window */
-    display : null
+    display : null,
+    /** App icons */
+    icons : [],
   };
 	
 	var Scenes = [];
@@ -66,11 +68,13 @@ var Lively3D = (function(Lively3D){
 	var DefaultScene = {
 		Id:'mainscene',
     
+    //scenen animointifunktio
 		RenderingFunction: function(){},
     
 		//GLGEObject: "DefaultSceneObject.children[0]",
 		//GLGEGroup: "DefaultSceneObject",
     
+    //mit‰ tehd‰‰n scenelle, kun appi avataan
 		Open: function(app, camera){
 			//app.GetWindowObject().setLookat(null);
 			//app.GetWindowObject().setRotZ(0).setRotX(0).setRotY(Math.PI);
@@ -78,42 +82,61 @@ var Lively3D = (function(Lively3D){
 			//app.GetWindowObject().setLoc(app.GetSceneObject(0).getLocX(),app.GetSceneObject(0).getLocY(),app.GetSceneObject(0).getLocZ());
 		},
     
+    //mit‰ tehd‰‰n scenelle, kun appi suljetaan
 		Close: function(app, camera){
 			//app.GetSceneObject(0).setLoc(app.GetWindowObject().getLocX(),app.GetWindowObject().getLocY(),app.GetWindowObject().getLocZ());
 		}
     
 	};
 	
-  //NOT NEEDED
-	/**
-		@namespace Permission literals used in the environment.
-	*/
-	Lively3D.PERMISSIONS = {
-		/** 
-			Drag object in the environment.
-			@constant
-		*/
-		DRAG: 'drag',
-		/** 
-			Open application in the environment.
-			@constant
-		*/
-		OPEN: 'open',
-		/** 
-			Close application in the environment.
-			@constant
-		*/
-		CLOSE: 'close',
-		/** 
-			Maximize application in the environment.
-			@constant
-		*/
-		MAXIMIZE: 'maximize'
-	};
-	
 	var Applications = [];
+  
+  var ActiveApp;
 	
 	
+  Lively3D.APP_EVENTS = {
+  
+    //v‰litet‰‰n tapahtumat apin eventtihandlerille
+    // sidotaan displayhun
+    onclick : function(){},
+
+    ondblclick : function(){},
+
+    onmousemove : function(){},
+
+    onmousedown : function(){},
+
+    onmouseup : function(){},
+    
+    onmouseover : function(){},
+
+    onmouseout : function(){},
+    
+    onkeydown : function(){}
+    
+  };
+  
+  Lively3D.SCENE_EVENTS = {
+    
+    //v‰litet‰‰n scenen tapahtumak‰sittelijˆille
+    // sidotaan p‰‰ikkunaan
+    onclick : function(){},
+
+    ondblclick : function(){},
+
+    onmousemove : function(){},
+
+    onmousedown : function(){},
+
+    onmouseup : function(){},
+    
+    onmouseover : function(){},
+
+    onmouseout : function(){},
+    
+    onkeydown : function(){}
+  };
+  
 	/**
 		Initializes Lively3D environment.
 		@param canvas ID of the canvas-element used for rendering Lively3D. 
@@ -154,20 +177,24 @@ var Lively3D = (function(Lively3D){
       opacity: 1
     });
     
-    var mesh = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000, 10, 10), material);
-    mesh.doubleSided = true;
-    mesh.flipSided = true;
-    
-    Lively3D.WIDGET.display = new WIDGET3D.Window();
-    Lively3D.WIDGET.display.setMesh(mesh);
+    Lively3D.WIDGET.display = new THREEJS_WIDGET3D.TitledWindow("app", 1000, 1000, material);
     Lively3D.WIDGET.mainWindow.addChild(Lively3D.WIDGET.display);
+    
+    var updateDisplay = function(display){
+      if(display.mesh_.material.map){
+        display.mesh_.material.map.needsUpdate = true;
+      }
+    };
+    Lively3D.WIDGET.display.addUpdateCallback(updateDisplay, Lively3D.WIDGET.display);
     
     var lasttime=0;
     var now;
 
     function animLoop(){
-      //requestAnimFrame(animLoop, canvas);
+      requestAnimFrame(animLoop, canvas);
       now=parseInt(new Date().getTime());
+      
+      Lively3D.WIDGET.display.update();
       
       //Scenes[CurrentScene].GetModel().RenderingFunction(now, lasttime);
       Lively3D.THREE.renderer.render(Lively3D.THREE.scene, Lively3D.THREE.camera);
@@ -201,87 +228,14 @@ var Lively3D = (function(Lively3D){
     var content = new THREE.MeshBasicMaterial({
       map: tex
     });
+    
     var mesh = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000, 10, 10), content);
     mesh.doubleSided = true;
     mesh.flipSided = true;
     
     Lively3D.WIDGET.display.setMesh(mesh);
     
-		//var tex = new GLGE.TextureCanvas();
-		//tex.setCanvas(canvas);
-		//var layer = new GLGE.MaterialLayer().setMapinput(GLGE.UV1).setMapto(GLGE.M_COLOR).setTexture(tex);
-		//var content = new GLGE.Material().addTexture(tex).addMaterialLayer(layer).setSpecular(0);
-		
-		//AddEventListeners(content, app.EventListeners);
-		
-		
-		//create cube texture
-		/*var Apptex = new GLGE.Texture().setSrc('images/app.png');
-		layer = new GLGE.MaterialLayer().setMapinput(GLGE.UV1).setMapto(GLGE.M_COLOR).setTexture(Apptex);
-		var newMat = new GLGE.Material().addTexture(Apptex).addMaterialLayer(layer).setSpecular(0);*/
-		
-		/*var progbar = new GLGE.Object();
-		progbar.setMesh(this.GLGE.document.getElement('ProgTitleBar'));
-		
-		var TitleCanvas = document.createElement('canvas');
-		
-		TitleCanvas.setAttribute("style", "display:none");
-		TitleCanvas.height = 64;
-		TitleCanvas.width = 512;
-
-		
-		var ctx = TitleCanvas.getContext('2d');
-		ctx.fillStyle = "#fff";
-		ctx.fillRect(0,0,512,164);
-		ctx.fillStyle = "#333";
-		ctx.font = "bold 50px arial";
-		ctx.fillText(name, 5, 50);
-		
-		var Titletex = new GLGE.TextureCanvas();
-		Titletex.setCanvas(TitleCanvas);
-		var titleLayer = new GLGE.MaterialLayer().setMapinput(GLGE.UV1).setMapto(GLGE.M_COLOR).setTexture(Titletex);
-		var titlemat = new GLGE.Material().addTexture(Titletex).addMaterialLayer(titleLayer).setSpecular(0);
-		
-		progbar.setMaterial(titlemat);
-		
-		var closebutton = new GLGE.Object();
-		closebutton.setMesh(this.GLGE.document.getElement('ProgCloseButton')).setMaterial(this.GLGE.document.getElement('closebutton'));
-		
-		var progwindow = new GLGE.Object();
-		progwindow.setMesh(this.GLGE.document.getElement('ProgWindow'));
-		progwindow.setMaterial(content);
-		
-		var window = new GLGE.Group();
-		window.addChild(progbar).addChild(closebutton).addChild(progwindow);
-		
-		livelyapp.SetWindowObject(window);
-		
-		var newObj = new GLGE.Object();
-		newObj.setLoc(0, 0, 0);
-		newObj.setId('app');
-		newObj.setMesh(this.GLGE.document.getElement('cube2'));
-		newObj.setMaterial(newMat);
-		
-		var wrapGroup = new GLGE.Group();
-		wrapGroup.addChild(newObj);
-		
-		
-		wrapGroup.addEventListener('mouseover', function(){
-			livelyapp.GetCurrentSceneObject().addChild(livelyapp.hoverText);
-		});
-		
-		
-		wrapGroup.addEventListener('mouseout', function(){
-			livelyapp.GetCurrentSceneObject().removeChild(livelyapp.hoverText);
-		});
-		
-		var sceneObj = {
-			group: wrapGroup
-		}
-		
-    //TODO: REDO
-		livelyapp.AddSceneObject(sceneObj);*/
-		
+		tex.needsUpdate = true;
 		
 		if ( app.GetState ){
 			livelyapp.SetSave(app.GetState);
@@ -299,37 +253,21 @@ var Lively3D = (function(Lively3D){
 		if ( app.Close ){
 			livelyapp.SetAppClose(app.Close);
 		}
-	
-		//livelyapp.hoverText = new GLGE.Text().setText(livelyapp.GetName()).setLoc(livelyapp.GetCurrentSceneObject().getLocX() + 5, livelyapp.GetCurrentSceneObject().getLocY(), livelyapp.GetCurrentSceneObject().getLocZ()).setId('hovertext').setSize(50).setColor('lightblue').setFont('arial').setLookat(Scenes[0].GetScene().camera);
-	
-		/*livelyapp.AddPermission(this.PERMISSIONS.DRAG, progbar);
-		livelyapp.AddPermission(this.PERMISSIONS.DRAG, newObj);
-		livelyapp.AddPermission(this.PERMISSIONS.CLOSE, closebutton);
-		livelyapp.AddPermission(this.PERMISSIONS.MAXIMIZE, progbar);*/
-		
-		//TODO: REDO
-		/*for ( var i = 1; i < Scenes.length; ++i ){
-			var model = Scenes[i].GetModel().CreateApplication(content);
-			livelyapp.AddSceneObject(model);	
-		}
-		Scenes[0].GetScene().addObject(wrapGroup);*/
-				
+    
 		app.SetLivelyApp(livelyapp);
-		
-		livelyapp.SetCurrentSceneObject(CurrentScene);
     
 		return livelyapp;
 	}
 
 	
-	var AddEventListeners = function(object, events){
+	/*var AddEventListeners = function(object, events){
 		
 		if ( object != null && events != null ){
 			$.each(events, function(key, value){
 				object.addEventListener(key, value);
 			});
 		}
-	}
+	}*/
 	
 	var AppIsOpen = false;
 	
@@ -338,24 +276,13 @@ var Lively3D = (function(Lively3D){
 		@param app Lively3D Application
 	*/
   
-  //TODO: REDO
+  //Kutsutaan, kun appia klikataan
 	Lively3D.Open = function(app){
 		
-		for ( var i in Scenes ){
-			if ( Scenes.hasOwnProperty(i) ){
-				Scenes[i].GetScene().removeChild( app.GetSceneObject(i));
-			}
-		}
-		
-		Scenes[CurrentScene].GetScene().addChild(app.GetWindowObject());
+    //kutsuu scenen open funktiota
 		Scenes[CurrentScene].GetModel().Open(app, Scenes[CurrentScene].GetScene());
 		
-		
-		app.ToggleWindowObject();
-		this.GLGE.clickedObject = app.GetWindowMaterial();
 		app.Open();
-	
-		Lively3D.GLGE.hoverObject = null;
 	}
 
 	/**
@@ -365,31 +292,14 @@ var Lively3D = (function(Lively3D){
   
   //TODO: REDO
 	Lively3D.Close = function(app){
-
-    //FIX
-		app.GetWindowObject().setScale(1,1,1);
-		
-		if( app.isMaximized() ){
-			Lively3D.Minimize(app);
-		}
-		
-		app.ToggleWindowObject();
     
-		//this.GLGE.clickedObject = null;
+    //minimoi ikkuna, jos se oli maksimoitu
+    //piilota display
     
 		app.Close();
-    
-		for ( var i in Scenes ){
-			if ( Scenes.hasOwnProperty(i) ){
-				Scenes[i].GetScene().addChild(app.GetSceneObject(i));
-			}
-		}
 		
-		Scenes[CurrentScene].GetScene().removeChild(app.GetWindowObject());
-		Scenes[CurrentScene].GetModel().Close(app, Scenes[CurrentScene].GetScene());
-		
-		
-		
+    //kutsuu scenen close objektia
+    Scenes[CurrentScene].GetModel().Close(app, Scenes[CurrentScene].GetScene());
 	}
 
 	/**
@@ -424,26 +334,7 @@ var Lively3D = (function(Lively3D){
 		app.Minimize();
 		this.GLGE.clickedObject = app.GetWindowMaterial();*/
 	}
-	
-	/**
-		Get the Lively3D application which presented by given GLGE Object.
-		@param glge_object The GLGE Object which represents application in the scene.
-		@returns Lively3D application if GLGE Object is bound to a application, otherwise null
-	*/
-	Lively3D.GetApplication = function(glge_object){
-		
-		for ( var i in Applications ){
-			if ( Applications.hasOwnProperty(i)){
-        //EI VOI VERRATA GLGE_OBJECTIIN, KUN SELLAISTA EI OLE
-				if ( Applications[i].GetCurrentSceneObject() === glge_object ){
-					return Applications[i];
-					
-				}
-			}
-		}
-		
-		return null;	
-	}
+  
 	
 	/**
 		Fires given event to given application.
@@ -560,11 +451,7 @@ var Lively3D = (function(Lively3D){
 		@param app Lively3D Application which is ready for usage.
 	*/
 	Lively3D.AllowAppStart = function(app){
-		/*for ( var i in Scenes ){
-			if ( Scenes.hasOwnProperty(i)){
-				app.AddPermission(this.PERMISSIONS.OPEN, app.GetSceneObject(i));
-			}
-		}*/
+  
 		if ( app.StateFromDropbox == true ){
 			if ( app.OpenAfterLoad == true){
 				Lively3D.Open(app);
@@ -574,6 +461,9 @@ var Lively3D = (function(Lively3D){
 			}
 		}
 		Lively3D.UI.ShowLoadCompleted();
+    
+    app.Open();
+    
 	}
 	
 	var SceneBuffer = [];
@@ -596,7 +486,7 @@ var Lively3D = (function(Lively3D){
 		Lively3D.LoadResources(scene);
 	}
 	
-  //TODO: POISTA
+  //Tee t‰lle jotain
 	var SceneLoader = function(url){
 		
 		var parsedURL = parseUrl(url);

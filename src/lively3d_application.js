@@ -28,6 +28,8 @@ SOFTWARE.
 	*/
 	Lively3D.Application = function(){
 		
+    //DEFAULTOTEUTUKSIA RAJAPINNOISTA
+    
 		/**
 			Gets application's inner state as javascript object.
 			@returns {object} inner state.
@@ -93,6 +95,9 @@ SOFTWARE.
 			return this;
 		}
 		
+    
+    //MUUTA SÄLÄÄ
+    
 		var maximized = false;
 		
 		/**
@@ -226,6 +231,10 @@ SOFTWARE.
 			}
 		}
 		
+    
+    
+    //APPLIKAATIORAJAPINTA
+    
 		var Name;
 		/**
 			Sets application name.
