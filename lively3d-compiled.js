@@ -57,7 +57,7 @@ var Lively3D = (function(Lively3D){
     /** Scene window */
     mainWindow : null,
     /** App window */
-    display : null,
+    grid : null,
     /** App icons */
     icons : [],
   };
@@ -65,6 +65,7 @@ var Lively3D = (function(Lively3D){
 	var Scenes = [];
 	var CurrentScene = 0;
 	
+  //TODO: GRID LAYOUT WINDOWSTA DEFAULT SCENE
 	var DefaultScene = {
 		Id:'mainscene',
     
@@ -172,27 +173,11 @@ var Lively3D = (function(Lively3D){
     
     Lively3D.WIDGET.mainWindow = THREEJS_WIDGET3D.init(Lively3D.THREE.scene, Lively3D.THREE.renderer, Lively3D.THREE.camera);
     
-    var material = new THREE.MeshBasicMaterial({
-      color: 0x000000,
-      opacity: 1
-    });
+    //THIS SHOULD BE A DEFAULT SCENE THING
+    //T�SS� PIT�ISI OIKEASTI LUODA UUSI LIVELY3D SCENE....
+    Lively3D.WIDGET.grid = new THREEJS_WIDGET3D.GridWindow(2000, 2000, 0xFF90BF.toString(16));
+    Lively3D.WIDGET.mainWindow.addChild(Lively3D.WIDGET.grid);
     
-    //var mesh = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000, 10, 10), material);
-    //mesh.doubleSided = true;
-    //mesh.flipSided = true;
-    
-    //Lively3D.WIDGET.display = new WIDGET3D.Window();
-    //Lively3D.WIDGET.display.setMesh(mesh);
-    
-    Lively3D.WIDGET.display = new THREEJS_WIDGET3D.TitledWindow("app", 1000, 1000, material);
-    Lively3D.WIDGET.mainWindow.addChild(Lively3D.WIDGET.display);
-    
-    var updateDisplay = function(display){
-      if(display.mesh_.material.map){
-        display.mesh_.material.map.needsUpdate = true;
-      }
-    };
-    Lively3D.WIDGET.display.addUpdateCallback(updateDisplay, Lively3D.WIDGET.display);
     
     var lasttime=0;
     var now;
@@ -201,7 +186,13 @@ var Lively3D = (function(Lively3D){
       requestAnimFrame(animLoop, canvas);
       now=parseInt(new Date().getTime());
       
-      Lively3D.WIDGET.display.update();
+      //t�m�n pit�isi olla scenen render -funktio
+      Lively3D.WIDGET.grid.update();
+      
+      //Updates applications texture (canvas)
+      for(var i = 0; i < Applications.length; ++i){
+        Applications[i].GetWindowObject().update();
+      }
       
       //Scenes[CurrentScene].GetModel().RenderingFunction(now, lasttime);
       Lively3D.THREE.renderer.render(Lively3D.THREE.scene, Lively3D.THREE.camera);
@@ -226,23 +217,39 @@ var Lively3D = (function(Lively3D){
 		//run the app code and save app canvas
 		
 		var app = AppInit(AppCode);
+    
+    console.log(app);
 		var canvas = app.GetCanvas();
 	
 		livelyapp.SetStart(app.StartApp);
 	
 		//create appcanvas texture
     var tex = new THREE.Texture(canvas);
-    var content = new THREE.MeshBasicMaterial({
+    var material = new THREE.MeshBasicMaterial({
       map: tex
     });
+    tex.needsUpdate = true;
     
-    var mesh = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000, 10, 10), content);
-    mesh.doubleSided = true;
-    mesh.flipSided = true;
     
-    Lively3D.WIDGET.display.setMesh(mesh);
+    var iconTexture = THREE.ImageUtils.loadTexture("../images/app.png");
     
-		tex.needsUpdate = true;
+    var icon = new THREEJS_WIDGET3D.GridIcon(iconTexture, Lively3D.WIDGET.grid);
+    livelyapp.SetIconObject(icon);
+    
+    var display = new THREEJS_WIDGET3D.TitledWindow(name, 1000, 1000, material);
+    Lively3D.WIDGET.mainWindow.addChild(display);
+    
+    var updateDisplay = function(display){
+      if(display.mesh_.material.map){
+        display.mesh_.material.map.needsUpdate = true;
+      }
+    };
+    
+    display.addUpdateCallback(updateDisplay, display);
+    display.setZ(100);
+    display.hide();
+    
+    livelyapp.SetWindowObject(display);
 		
 		if ( app.GetState ){
 			livelyapp.SetSave(app.GetState);
@@ -263,18 +270,80 @@ var Lively3D = (function(Lively3D){
     
 		app.SetLivelyApp(livelyapp);
     
+    //event handler for icon click.
+    var iconOnclick = function(event, livelyapp){
+      livelyapp.Open();
+      livelyapp.GetWindowObject().show();
+      livelyapp.GetWindowObject().focus();
+    };
+    icon.addEventListener(WIDGET3D.EventType.onclick, iconOnclick, livelyapp);
+    
+    var closeDisplay = function(event, livelyapp){
+      livelyapp.Close();
+      livelyapp.GetWindowObject().hide();
+    };
+    display.closeButton_.addEventListener(WIDGET3D.EventType.onclick, closeDisplay, livelyapp);
+    
+    AddEventListeners(display, app.EventListeners);
+    
 		return livelyapp;
 	}
 
 	
-	/*var AddEventListeners = function(object, events){
-		
-		if ( object != null && events != null ){
-			$.each(events, function(key, value){
-				object.addEventListener(key, value);
-			});
-		}
-	}*/
+	var AddEventListeners = function(object, events){
+    
+    if(object && events){
+      for(var i in events){
+        addListener(object, i, events);
+      }
+    }
+    
+	}
+  
+  var addListener = function(object, event, events){
+    switch(event){
+      case "click":
+        object.addEventListener(Widget3D.EventType.onclick, events.click);
+        break;
+        
+      case "dblclick":
+        object.addEventListener(Widget3D.EventType.ondblclick, events.dblclick);
+        break;
+        
+      case "mousemove":
+        object.addEventListener(WIDGET3D.EventType.onmousemove, events.mousemove);
+        break;
+        
+      case "mousedown":
+        object.addEventListener(WIDGET3D.EventType.onmousedown, events.mousedown);
+        break;
+      
+      
+      case "mouseup":
+        object.addEventListener(WIDGET3D.EventType.onmouseup, events.mouseup);
+        break;
+        
+      case "mouseover":
+        object.addEventListener(WIDGET3D.EventType.onmouseover, events.mouseover);
+        break;
+        
+      case "mouseout":
+        object.addEventListener(WIDGET3D.EventType.onmouseout, events.mouseout);
+        break;
+        
+      case "keypress":
+        object.addEventListener(WIDGET3D.EventType.onkeydown, events.keypress);
+        break;
+        
+      case "keydown":
+        object.addEventListener(WIDGET3D.EventType.onkeydown, events.keydown);
+        break;
+        
+      default:
+        console.log("default");
+        return;
+    }
+  };
 	
 	var AppIsOpen = false;
 	
@@ -284,6 +353,7 @@ var Lively3D = (function(Lively3D){
 	*/
   
   //Kutsutaan, kun appia klikataan
+  //VOI K�YTT�� VASTA KUN SCENET ON KORJATTU
 	Lively3D.Open = function(app){
 		
     //kutsuu scenen open funktiota
@@ -298,10 +368,10 @@ var Lively3D = (function(Lively3D){
 	*/
   
   //TODO: REDO
+  //VOI K�YTT�� VASTA KUN SCENET ON KORJATTU
 	Lively3D.Close = function(app){
     
     //minimoi ikkuna, jos se oli maksimoitu
-    //piilota display
     
 		app.Close();
 		
@@ -468,8 +538,6 @@ var Lively3D = (function(Lively3D){
 			}
 		}
 		Lively3D.UI.ShowLoadCompleted();
-    
-    app.Open();
     
 	}
 	
@@ -777,6 +845,23 @@ SOFTWARE.
 		this.GetWindowObject = function(){
 			return WindowObject;
 		}
+    
+    var IconObject;
+		/**
+			Set the application icon object.
+			@param icon Object which represents application icon.
+		*/
+		this.SetIconObject = function(icon){
+			IconObject = icon;
+			return this;
+		}
+		
+		/**
+			Gets Application icon.
+		*/
+		this.GetIconObject = function(){
+			return IconObject;
+		}
 		
 		/**
 			Gets application material where js events are bound.
@@ -790,6 +875,7 @@ SOFTWARE.
 		/**
 			Switches between scene object and application window.
 		*/
+    //TODO: PIT�� MUOKATA
 		this.ToggleWindowObject = function(){
 			if ( CurrentObject == WindowObject ){
 				CurrentObject = SceneObjects[Lively3D.GetCurrentSceneIndex()];
@@ -803,6 +889,7 @@ SOFTWARE.
 		/**
 			Gets the current scene object within the scene.
 		*/
+    //TODO: EI V�LTT�M�TT� TARVITA
 		this.GetCurrentSceneObject = function(){
 			if ( CurrentObject.group ){
 				return CurrentObject.group;
@@ -813,6 +900,7 @@ SOFTWARE.
 		/**
 			Get the current application object within the scene.
 		*/
+    //TODO: EI V�LTT�M�TT� TARVITA
 		this.GetCurrentObject = function(){
 			return CurrentObject;
 		}
@@ -821,6 +909,7 @@ SOFTWARE.
 			Sets the current scene object.
 			@param {integer} index Index of the scene.
 		*/
+    //TODO: EI V�LTT�M�TT� TARVITA
 		this.SetCurrentSceneObject = function(index){
 			if ( index != null  && index >= 0 && index < SceneObjects.length ){
 				CurrentObject = SceneObjects[index];
@@ -834,6 +923,7 @@ SOFTWARE.
 			Gets scene object for specified scene.
 			@param {integer} index Index of the scene.
 		*/
+    //TODO: EI V�LTT�M�TT� TARVITA
 		this.GetSceneObject = function(index){
 			if ( index != null  && index >= 0 && index < SceneObjects.length ){
 				return SceneObjects[index].group;
@@ -847,6 +937,7 @@ SOFTWARE.
 			Gets app object for the scene.
 			@param {integer} index Index of the scene.
 		*/
+    //TODO: EI V�LTT�M�TT� TARVITA
 		this.GetAppObject = function(index){
 			if ( index != null  && index >= 0 && index < SceneObjects.length ){
 				return SceneObjects[index];
