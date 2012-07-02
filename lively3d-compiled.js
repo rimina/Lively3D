@@ -92,52 +92,6 @@ var Lively3D = (function(Lively3D){
 	
 	var Applications = [];
   
-  var ActiveApp;
-	
-	
-  Lively3D.APP_EVENTS = {
-  
-    //v�litet��n tapahtumat apin eventtihandlerille
-    // sidotaan displayhun
-    onclick : function(){},
-
-    ondblclick : function(){},
-
-    onmousemove : function(){},
-
-    onmousedown : function(){},
-
-    onmouseup : function(){},
-    
-    onmouseover : function(){},
-
-    onmouseout : function(){},
-    
-    onkeydown : function(){}
-    
-  };
-  
-  Lively3D.SCENE_EVENTS = {
-    
-    //v�litet��n scenen tapahtumak�sittelij�ille
-    // sidotaan p��ikkunaan
-    onclick : function(){},
-
-    ondblclick : function(){},
-
-    onmousemove : function(){},
-
-    onmousedown : function(){},
-
-    onmouseup : function(){},
-    
-    onmouseover : function(){},
-
-    onmouseout : function(){},
-    
-    onkeydown : function(){}
-  };
-  
 	/**
 		Initializes Lively3D environment.
 		@param canvas ID of the canvas-element used for rendering Lively3D. 
@@ -236,7 +190,7 @@ var Lively3D = (function(Lively3D){
     var icon = new THREEJS_WIDGET3D.GridIcon(iconTexture, Lively3D.WIDGET.grid);
     livelyapp.SetIconObject(icon);
     
-    var display = new THREEJS_WIDGET3D.TitledWindow(name, 1000, 1000, material);
+    var display = new THREEJS_WIDGET3D.TitledWindow(name, 1500, 1000, material);
     Lively3D.WIDGET.mainWindow.addChild(display);
     
     var updateDisplay = function(display){
@@ -278,6 +232,7 @@ var Lively3D = (function(Lively3D){
     };
     icon.addEventListener(WIDGET3D.EventType.onclick, iconOnclick, livelyapp);
     
+    //event handler for windows close button
     var closeDisplay = function(event, livelyapp){
       livelyapp.Close();
       livelyapp.GetWindowObject().hide();
@@ -290,6 +245,8 @@ var Lively3D = (function(Lively3D){
 	}
 
 	
+  //Binds application eventlisteners to
+  // application window events
 	var AddEventListeners = function(object, events){
     
     if(object && events){
