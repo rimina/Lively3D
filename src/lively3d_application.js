@@ -152,63 +152,13 @@ SOFTWARE.
 		this.GetWindowObject = function(){
 			return WindowObject;
 		}
-    
-    var IconObject;
-		/**
-			Set the application icon object.
-			@param icon Object which represents application icon.
-		*/
-		this.SetIconObject = function(icon){
-			IconObject = icon;
-			return this;
-		}
-		
-		/**
-			Gets Application icon.
-		*/
-		this.GetIconObject = function(){
-			return IconObject;
-		}
-		
-		/**
-			Gets application material where js events are bound.
-		*/
-    //TODO: EI TARVITA
-		this.GetWindowMaterial = function(){
-			return WindowObject.children[2].getMaterial();
-		}
 		
 		var CurrentObject;
-		/**
-			Switches between scene object and application window.
-		*/
-    //TODO: PITÄÄ MUOKATA
-		this.ToggleWindowObject = function(){
-			if ( CurrentObject == WindowObject ){
-				CurrentObject = SceneObjects[Lively3D.GetCurrentSceneIndex()];
-			}
-			else{
-				CurrentObject = WindowObject;
-			}
-			return this;
-		}
 		
 		/**
 			Gets the current scene object within the scene.
 		*/
-    //TODO: EI VÄLTTÄMÄTTÄ TARVITA
 		this.GetCurrentSceneObject = function(){
-			if ( CurrentObject.group ){
-				return CurrentObject.group;
-			}
-			return CurrentObject;
-		}
-		
-		/**
-			Get the current application object within the scene.
-		*/
-    //TODO: EI VÄLTTÄMÄTTÄ TARVITA
-		this.GetCurrentObject = function(){
 			return CurrentObject;
 		}
 		
@@ -216,7 +166,6 @@ SOFTWARE.
 			Sets the current scene object.
 			@param {integer} index Index of the scene.
 		*/
-    //TODO: EI VÄLTTÄMÄTTÄ TARVITA
 		this.SetCurrentSceneObject = function(index){
 			if ( index != null  && index >= 0 && index < SceneObjects.length ){
 				CurrentObject = SceneObjects[index];
@@ -230,24 +179,9 @@ SOFTWARE.
 			Gets scene object for specified scene.
 			@param {integer} index Index of the scene.
 		*/
-    //TODO: EI VÄLTTÄMÄTTÄ TARVITA
 		this.GetSceneObject = function(index){
 			if ( index != null  && index >= 0 && index < SceneObjects.length ){
 				return SceneObjects[index].group;
-			}
-			else{
-				console.log("No such scene object");
-			}
-		}
-		
-		/**
-			Gets app object for the scene.
-			@param {integer} index Index of the scene.
-		*/
-    //TODO: EI VÄLTTÄMÄTTÄ TARVITA
-		this.GetAppObject = function(index){
-			if ( index != null  && index >= 0 && index < SceneObjects.length ){
-				return SceneObjects[index];
 			}
 			else{
 				console.log("No such scene object");

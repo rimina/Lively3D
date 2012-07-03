@@ -54,12 +54,13 @@ var Lively3D = (function(Lively3D){
     @namespace Holds WIDGET3D related variables.
   */
   Lively3D.WIDGET = {
-    /** Scene window */
+    /** Convas */
     mainWindow : null,
-    /** App window */
-    grid : null,
-    /** App icons */
-    icons : [],
+    /** Scene window */
+    //scene is WIDGET3D window. it might be styled or not
+    // but it's a window that can have children (applications)
+    // scene window is a child of a mainWindow
+    grid : null
   };
 	
 	var Scenes = [];
@@ -70,7 +71,9 @@ var Lively3D = (function(Lively3D){
 		Id:'mainscene',
     
     //scenen animointifunktio
-		RenderingFunction: function(){},
+		RenderingFunction: function(){
+      //Haetaan scenen malli ja kutsutaan sille update -funktiota
+    },
     
 		//GLGEObject: "DefaultSceneObject.children[0]",
 		//GLGEGroup: "DefaultSceneObject",
@@ -127,8 +130,11 @@ var Lively3D = (function(Lively3D){
     
     Lively3D.WIDGET.mainWindow = THREEJS_WIDGET3D.init(Lively3D.THREE.scene, Lively3D.THREE.renderer, Lively3D.THREE.camera);
     
-    //THIS SHOULD BE A DEFAULT SCENE THING
     //T�SS� PIT�ISI OIKEASTI LUODA UUSI LIVELY3D SCENE....
+    //
+    //GRID on scenen malli ja periaatteessa mallin luominen pit�isi tapahtua scene� luodessa, ei t�ss� kohdassa.
+    //Scenen pit�� m��ritt�� addApplication -fuktio, jonka avulla appi saadaan luotua haluttuun esitystapaan ja
+    //scenen vaihtamiseen t�ytyy tehd� esitystavan muunnos jo olemassa oleville appeille.
     Lively3D.WIDGET.grid = new THREEJS_WIDGET3D.GridWindow(2000, 2000, 0xFF90BF.toString(16));
     Lively3D.WIDGET.mainWindow.addChild(Lively3D.WIDGET.grid);
     
@@ -171,36 +177,38 @@ var Lively3D = (function(Lively3D){
 		//run the app code and save app canvas
 		
 		var app = AppInit(AppCode);
-    
-    console.log(app);
+
 		var canvas = app.GetCanvas();
 	
 		livelyapp.SetStart(app.StartApp);
-	
-		//create appcanvas texture
+    
+    //T�SS� IKONI PIT�ISI LUODA SCENEN M��RITTELEM�LL� FUNKTIOLLA, JOTTA
+    //SCENEKOHTAINEN ESITYSTAPA TULISI HUOMIOITUA
+    var iconTexture = THREE.ImageUtils.loadTexture("../images/app.png");
+    var icon = new THREEJS_WIDGET3D.GridIcon(iconTexture, Lively3D.WIDGET.grid);
+    
+    
+    
+    //create appcanvas texture fo application window
     var tex = new THREE.Texture(canvas);
     var material = new THREE.MeshBasicMaterial({
       map: tex
     });
     tex.needsUpdate = true;
     
-    
-    var iconTexture = THREE.ImageUtils.loadTexture("../images/app.png");
-    
-    var icon = new THREEJS_WIDGET3D.GridIcon(iconTexture, Lively3D.WIDGET.grid);
-    livelyapp.SetIconObject(icon);
-    
-    var display = new THREEJS_WIDGET3D.TitledWindow(name, 1500, 1000, material);
+    //creating application window
+    var display = new THREEJS_WIDGET3D.TitledWindow(name, 1500, 1500, material);
     Lively3D.WIDGET.mainWindow.addChild(display);
     
+    //updatefunction for application window
     var updateDisplay = function(display){
       if(display.mesh_.material.map){
         display.mesh_.material.map.needsUpdate = true;
       }
     };
-    
     display.addUpdateCallback(updateDisplay, display);
-    display.setZ(100);
+    display.setZ(200);
+    //app window is hidden until the app is opened
     display.hide();
     
     livelyapp.SetWindowObject(display);
@@ -226,6 +234,8 @@ var Lively3D = (function(Lively3D){
     
     //event handler for icon click.
     var iconOnclick = function(event, livelyapp){
+      //KUN SCENE SAADAAN KORJATTUA, T�SS� KUTSUTAAN LIVELYN OPEN FUNKTIOTA.
+      //IKKUNAN N�YTT�MINEN JA FOKUSOIMINEN TAPAHTUU SIELL�.
       livelyapp.Open();
       livelyapp.GetWindowObject().show();
       livelyapp.GetWindowObject().focus();
@@ -234,75 +244,121 @@ var Lively3D = (function(Lively3D){
     
     //event handler for windows close button
     var closeDisplay = function(event, livelyapp){
+      //KUN SCENE SAADAAN KORJATTUA, T�SS� KUTSUTTAAN LIVELYN CLOSE FUNKTIOTA.
+      //IKKUNAN PIILOTTAMISEN PIT�ISI OLLA SIELL�.
       livelyapp.Close();
       livelyapp.GetWindowObject().hide();
     };
     display.closeButton_.addEventListener(WIDGET3D.EventType.onclick, closeDisplay, livelyapp);
     
-    AddEventListeners(display, app.EventListeners);
+    //binds applications event listeners to application window
+    AddEventListeners(display, app.EventListeners, livelyapp);
     
 		return livelyapp;
 	}
-
-	
-  //Binds application eventlisteners to
-  // application window events
-	var AddEventListeners = function(object, events){
+  
+  /**
+		Binds application eventlisteners to application window.
+		@param object application window object, WIDGET3D -object
+    @param events events -object that contains the eventhandler callback code
+	*/
+	var AddEventListeners = function(object, events, app){
     
+    var hasClickEvent = false;
     if(object && events){
       for(var i in events){
-        addListener(object, i, events);
+        hasClickEvent = AddListener(object, i, events, app);
       }
+    }
+    if(!hasClickEvent){
+      //default eventhandler focuses appwindow on click
+      object.addEventListener(WIDGET3D.EventType.onclick, function(event){});
     }
     
 	}
   
-  var addListener = function(object, event, events){
+  
+  /**
+		AddEventListeners calls this function for every event key found,
+    This function does the eventhandler binding to app window.
+		@param object application window object, WIDGET3D -object
+    @param event event key, string
+    @param events events -object that contains the eventhandler callback code
+	*/
+  var AddListener = function(object, event, events, app){
     switch(event){
       case "click":
-        object.addEventListener(Widget3D.EventType.onclick, events.click);
-        break;
+        object.addEventListener(WIDGET3D.EventType.onclick, mouseEvents, {app:app, callback: events.click});
+        return true;
         
       case "dblclick":
-        object.addEventListener(Widget3D.EventType.ondblclick, events.dblclick);
-        break;
+        object.addEventListener(WIDGET3D.EventType.ondblclick, mouseEvents, {app:app, callback: events.dblclick});
+        return false;
         
       case "mousemove":
-        object.addEventListener(WIDGET3D.EventType.onmousemove, events.mousemove);
-        break;
+        object.addEventListener(WIDGET3D.EventType.onmousemove, mouseEvents, {app:app, callback: events.mousemove});
+        return false;
         
       case "mousedown":
-        object.addEventListener(WIDGET3D.EventType.onmousedown, events.mousedown);
-        break;
-      
+        object.addEventListener(WIDGET3D.EventType.onmousedown, mouseEvents, {app:app, callback: events.mousedown});
+        return false;
       
       case "mouseup":
-        object.addEventListener(WIDGET3D.EventType.onmouseup, events.mouseup);
-        break;
+        object.addEventListener(WIDGET3D.EventType.onmouseup, mouseEvents, {app:app, callback: events.mouseup});
+        return false;
         
       case "mouseover":
-        object.addEventListener(WIDGET3D.EventType.onmouseover, events.mouseover);
-        break;
+        object.addEventListener(WIDGET3D.EventType.onmouseover, mouseEvents, {app:app, callback: events.mouseover});
+        return false;
         
       case "mouseout":
-        object.addEventListener(WIDGET3D.EventType.onmouseout, events.mouseout);
-        break;
+        object.addEventListener(WIDGET3D.EventType.onmouseout, mouseEvents, {app:app, callback: events.mouseout});
+        return false;
         
       case "keypress":
-        object.addEventListener(WIDGET3D.EventType.onkeydown, events.keypress);
-        break;
+        object.addEventListener(WIDGET3D.EventType.onkeypress, events.keypress);
+        return false;
         
       case "keydown":
         object.addEventListener(WIDGET3D.EventType.onkeydown, events.keydown);
-        break;
+        return false;
+        
+      case "keyup":
+        object.addEventListener(WIDGET3D.EventType.onkeyup, events.keyup);
+        return false;
         
       default:
-        console.log("default");
-        return;
+        console.log("default: " + event);
+        return false;
     }
   };
-	
-	var AppIsOpen = false;
+  
+  /**
+    Calculates coordinate translations from screen coordinates to
+    application coordinates and calls applications event handler for the event
+    
+    @param event DOM event object
+    @param argumets object that contain application and it's callbackfunction
+  */
+  var mouseEvents = function(event, arguments){
+    var window = arguments.app.GetWindowObject();
+    
+    var normalX = ((window.mousePosition_.x - (-window.width_  / 2.0)) / (window.width_ ));
+    var normalY = 1.0 - ((window.mousePosition_.y - (-window.height_ / 2.0)) / (window.height_));
+    
+    var canvasWidth = window.mesh_.material.map.image.width;
+    var canvasHeight = window.mesh_.material.map.image.height;
+    
+    
+    var x = normalX * canvasWidth;
+    var y = normalY * canvasHeight;
+    
+    var coords = [x, y];
+    
+    var param = {"coord": coords, "canvas": window.mesh_.material.map.image, "event": event}; 
+    
+    arguments.callback(param);
+  }
 	
 	/**
 		Opens given Lively3D Application in every 3D-scene.
@@ -316,6 +372,7 @@ var Lively3D = (function(Lively3D){
     //kutsuu scenen open funktiota
 		Scenes[CurrentScene].GetModel().Open(app, Scenes[CurrentScene].GetScene());
 		
+    //t�ss� kohtaa pit�isi my�s kutsua appin ikkunalle show -funktiota
 		app.Open();
 	}
 
@@ -328,84 +385,13 @@ var Lively3D = (function(Lively3D){
   //VOI K�YTT�� VASTA KUN SCENET ON KORJATTU
 	Lively3D.Close = function(app){
     
-    //minimoi ikkuna, jos se oli maksimoitu
+    //TODO: minimoi ikkuna, jos se oli maksimoitu!!
     
+    //t�ss� kohtaa pit�isi my�s kutsua appin ikkunalle hide -funktiota
 		app.Close();
 		
     //kutsuu scenen close objektia
     Scenes[CurrentScene].GetModel().Close(app, Scenes[CurrentScene].GetScene());
-	}
-
-	/**
-		Maximizes given Lively3D Application in the current scene.
-		@param app Lively3D Application 
-	*/
-  
-  //TODO: REDO
-	Lively3D.Maximize = function(app){
-			
-		/*var scene = Scenes[CurrentScene].GetScene();
-		var ray = scene.makeRay(window.innerWidth/2, window.innerHeight/2);
-		var FrontOfCamera = [];
-		FrontOfCamera = [ray.origin[0] - ray.coord[0]*11,
-			ray.origin[1] - ray.coord[1]*11,
-			ray.origin[2] - ray.coord[2]*11];
-			
-		app.OldLocation = [app.GetWindowObject().getLocX(),app.GetWindowObject().getLocY(),app.GetWindowObject().getLocZ()];
-		app.GetWindowObject().setLoc(FrontOfCamera[0],FrontOfCamera[1],FrontOfCamera[2]).setScale(1,1,1);
-		app.Maximize();	
-		this.GLGE.clickedObject = app.GetWindowMaterial();*/
-	}
-	
-	/**
-		Minimizes given Lively3D Application to the original location and size.
-		@param app Lively3D Application
-	*/
-  
-  //TODO: REDO
-	Lively3D.Minimize = function(app){
-		/*app.GetWindowObject().setLoc(app.OldLocation[0],app.OldLocation[1],app.OldLocation[2]).setScale(3,3,3);
-		app.Minimize();
-		this.GLGE.clickedObject = app.GetWindowMaterial();*/
-	}
-  
-	
-	/**
-		Fires given event to given application.
-		@param {string} eventname Name of the event for firing.
-		@param app Application which is the target of the event.
-		@param textureCoordinates x- and y-coordinates in texture of the event.
-		@param glge_object The GLGE Object which represents the target application.
-		@param event Javascript event-object.
-	*/
-  
-  //TODO: REDO EVENT FIRING 
-	Lively3D.FireEvent= function(eventname, app, textureCoordinates,glge_object, event ){
-	
-		
-		if ( textureCoordinates, glge_object ){
-			var material;
-			material = glge_object.getMaterial();
-			
-			var tex = material.getLayers()[0].getTexture();
-			
-			//tex is GLGE.TextureCanvas
-			if ( tex.getCanvas ){
-				var params;
-				if ( eventname != "mousewheel" ){
-					var canvas = tex.getCanvas();
-					var canvasCoordinates = [ textureCoordinates[0]*canvas.width, (1-textureCoordinates[1])*canvas.height ]; 
-					params = { "coord":canvasCoordinates, "canvas":canvas };
-				}
-				else{
-					params = event;
-				}
-				material.fireEvent(eventname, params);
-			}
-		}
-		else{
-			app.GetCurrentSceneObject().fireEvent(eventname);
-		}
 	}
 	
 	
@@ -504,6 +490,7 @@ var Lively3D = (function(Lively3D){
 		Adds a new scene to the environment.
 		@param scene Object which implements Lively3D APIs for 3d scene.
 	*/
+  //TEE T�LLE JOTAIN
 	Lively3D.AddScene = function(scene){
 		console.log("Loading scene..");
 		
@@ -518,7 +505,7 @@ var Lively3D = (function(Lively3D){
 		Lively3D.LoadResources(scene);
 	}
 	
-  //Tee t�lle jotain
+  //T�LLEKIN T�YTYY EHK� TEHD� JOTAIN
 	var SceneLoader = function(url){
 		
 		var parsedURL = parseUrl(url);
@@ -581,22 +568,22 @@ var Lively3D = (function(Lively3D){
 	*/
 	Lively3D.ChangeScene = function(){
 		
-		for ( var i in Applications){
+		/*for ( var i in Applications){
 			if ( Applications.hasOwnProperty(i)){
 				if ( !Applications[i].isClosed() ){
 					Lively3D.Close(Applications[i]);
 				}
 			}
-		}
+		}*/
 		
 		CurrentScene += 1;
 		if (CurrentScene == Scenes.length ){
 			CurrentScene = 0;
 		}
 		
-		for ( var i in Applications){
+		/*for ( var i in Applications){
 			Applications[i].SetCurrentSceneObject(CurrentScene);
-		}
+		}*/
 		
 	}
 	
@@ -802,63 +789,13 @@ SOFTWARE.
 		this.GetWindowObject = function(){
 			return WindowObject;
 		}
-    
-    var IconObject;
-		/**
-			Set the application icon object.
-			@param icon Object which represents application icon.
-		*/
-		this.SetIconObject = function(icon){
-			IconObject = icon;
-			return this;
-		}
-		
-		/**
-			Gets Application icon.
-		*/
-		this.GetIconObject = function(){
-			return IconObject;
-		}
-		
-		/**
-			Gets application material where js events are bound.
-		*/
-    //TODO: EI TARVITA
-		this.GetWindowMaterial = function(){
-			return WindowObject.children[2].getMaterial();
-		}
 		
 		var CurrentObject;
-		/**
-			Switches between scene object and application window.
-		*/
-    //TODO: PIT�� MUOKATA
-		this.ToggleWindowObject = function(){
-			if ( CurrentObject == WindowObject ){
-				CurrentObject = SceneObjects[Lively3D.GetCurrentSceneIndex()];
-			}
-			else{
-				CurrentObject = WindowObject;
-			}
-			return this;
-		}
 		
 		/**
 			Gets the current scene object within the scene.
 		*/
-    //TODO: EI V�LTT�M�TT� TARVITA
 		this.GetCurrentSceneObject = function(){
-			if ( CurrentObject.group ){
-				return CurrentObject.group;
-			}
-			return CurrentObject;
-		}
-		
-		/**
-			Get the current application object within the scene.
-		*/
-    //TODO: EI V�LTT�M�TT� TARVITA
-		this.GetCurrentObject = function(){
 			return CurrentObject;
 		}
 		
@@ -866,7 +803,6 @@ SOFTWARE.
 			Sets the current scene object.
 			@param {integer} index Index of the scene.
 		*/
-    //TODO: EI V�LTT�M�TT� TARVITA
 		this.SetCurrentSceneObject = function(index){
 			if ( index != null  && index >= 0 && index < SceneObjects.length ){
 				CurrentObject = SceneObjects[index];
@@ -880,24 +816,9 @@ SOFTWARE.
 			Gets scene object for specified scene.
 			@param {integer} index Index of the scene.
 		*/
-    //TODO: EI V�LTT�M�TT� TARVITA
 		this.GetSceneObject = function(index){
 			if ( index != null  && index >= 0 && index < SceneObjects.length ){
 				return SceneObjects[index].group;
-			}
-			else{
-				console.log("No such scene object");
-			}
-		}
-		
-		/**
-			Gets app object for the scene.
-			@param {integer} index Index of the scene.
-		*/
-    //TODO: EI V�LTT�M�TT� TARVITA
-		this.GetAppObject = function(index){
-			if ( index != null  && index >= 0 && index < SceneObjects.length ){
-				return SceneObjects[index];
 			}
 			else{
 				console.log("No such scene object");
