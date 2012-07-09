@@ -135,7 +135,7 @@ var Lively3D = (function(Lively3D){
     //GRID on scenen malli ja periaatteessa mallin luominen pit�isi tapahtua scene� luodessa, ei t�ss� kohdassa.
     //Scenen pit�� m��ritt�� addApplication -fuktio, jonka avulla appi saadaan luotua haluttuun esitystapaan ja
     //scenen vaihtamiseen t�ytyy tehd� esitystavan muunnos jo olemassa oleville appeille.
-    Lively3D.WIDGET.grid = new THREEJS_WIDGET3D.GridWindow(2000, 2000, 0xFF90BF.toString(16));
+    Lively3D.WIDGET.grid = new THREEJS_WIDGET3D.GridWindow(2000, 2000, 0x6A8455.toString(16));
     Lively3D.WIDGET.mainWindow.addChild(Lively3D.WIDGET.grid);
     
     
