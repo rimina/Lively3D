@@ -138,7 +138,12 @@ var Lively3D = (function(Lively3D){
     Lively3D.WIDGET.grid = new THREEJS_WIDGET3D.GridWindow(2000, 2000, 0x6A8455.toString(16));
     Lively3D.WIDGET.mainWindow.addChild(Lively3D.WIDGET.grid);
     
+    //Gridin eventtihandlerit py�rittelylle.
+    Lively3D.WIDGET.grid.addEventListener(WIDGET3D.EventType.onmousedown, Lively3D.WIDGET.grid.mousedownHandler, Lively3D.WIDGET.grid);
+    Lively3D.WIDGET.grid.addEventListener(WIDGET3D.EventType.onmouseup, Lively3D.WIDGET.grid.mouseupHandler, Lively3D.WIDGET.grid);
+    Lively3D.WIDGET.grid.addEventListener(WIDGET3D.EventType.onmousemove, Lively3D.WIDGET.grid.mousemoveHandler, Lively3D.WIDGET.grid);
     
+    //ANIMATION LOOP
     var lasttime=0;
     var now;
 
@@ -199,6 +204,10 @@ var Lively3D = (function(Lively3D){
     //creating application window
     var display = new THREEJS_WIDGET3D.TitledWindow(name, 1500, 1500, material);
     Lively3D.WIDGET.mainWindow.addChild(display);
+    console.log(display);
+    display.title_.addEventListener(WIDGET3D.EventType.onmousedown, display.mousedownHandler, display);
+    display.title_.addEventListener(WIDGET3D.EventType.onmouseup, display.mouseupHandler, display);
+    display.title_.addEventListener(WIDGET3D.EventType.onmousemove, display.mousemoveHandler, display);
     
     //updatefunction for application window
     var updateDisplay = function(display){
@@ -344,21 +353,20 @@ var Lively3D = (function(Lively3D){
     var window = arguments.app.GetWindowObject();
     
     var normalX = ((window.mousePosition_.x - (-window.width_  / 2.0)) / (window.width_ ));
-    var normalY = 1.0 - ((window.mousePosition_.y - (-window.height_ / 2.0)) / (window.height_));
+    var normalY = /*1.0 -*/((window.mousePosition_.z - (-window.height_ / 2.0)) / (window.height_));
     
     var canvasWidth = window.mesh_.material.map.image.width;
     var canvasHeight = window.mesh_.material.map.image.height;
-    
     
     var x = normalX * canvasWidth;
     var y = normalY * canvasHeight;
     
     var coords = [x, y];
     
-    var param = {"coord": coords, "canvas": window.mesh_.material.map.image, "event": event}; 
+    var param = {"coord": coords, "canvas": window.mesh_.material.map.image, "event": event};
     
     arguments.callback(param);
-  }
+  };
 	
 	/**
 		Opens given Lively3D Application in every 3D-scene.
