@@ -55,12 +55,7 @@ var Lively3D = (function(Lively3D){
   */
   Lively3D.WIDGET = {
     /** Convas */
-    mainWindow : null,
-    /** Scene window */
-    //scene is WIDGET3D window. it might be styled or not
-    // but it's a window that can have children (applications)
-    // scene window is a child of a mainWindow
-    grid : null
+    mainWindow : null
   };
 	
 	var Scenes = [];
@@ -70,25 +65,40 @@ var Lively3D = (function(Lively3D){
 	var DefaultScene = {
 		Id:'mainscene',
     
-    //scenen animointifunktio
-		RenderingFunction: function(){
-      //Haetaan scenen malli ja kutsutaan sille update -funktiota
+    Model: null,
+    
+    Icon: null,
+    
+    //creates the object related to scene and
+    //initializes it to be ready for use
+    Init: function(){
+    
+      this.Model = new THREEJS_WIDGET3D.GridWindow(2000, 2000, 0x6A8455.toString(16));
+
+      this.Model.addEventListener(WIDGET3D.EventType.onmousedown, this.Model.mousedownHandler, this.Model);
+      this.Model.addEventListener(WIDGET3D.EventType.onmouseup, this.Model.mouseupHandler, this.Model);
+      this.Model.addEventListener(WIDGET3D.EventType.onmousemove, this.Model.mousemoveHandler, this.Model);
     },
     
-		//GLGEObject: "DefaultSceneObject.children[0]",
-		//GLGEGroup: "DefaultSceneObject",
+    //creates a scene specific icon for the application
+    CreateIcon: function(){
     
-    //mit� tehd��n scenelle, kun appi avataan
+      var iconTexture = THREE.ImageUtils.loadTexture("../images/app.png");
+      this.Icon = new THREEJS_WIDGET3D.GridIcon(iconTexture, this.Model);
+      return this.Icon;
+    },
+    
+    //animatingfunction for scene
+		RenderingFunction: function(){
+      this.Model.update();
+    },
+    
+    //scene specific operations that are done when app is opened
 		Open: function(app, camera){
-			//app.GetWindowObject().setLookat(null);
-			//app.GetWindowObject().setRotZ(0).setRotX(0).setRotY(Math.PI);
-			//app.GetWindowObject().setScale(3,3,3);
-			//app.GetWindowObject().setLoc(app.GetSceneObject(0).getLocX(),app.GetSceneObject(0).getLocY(),app.GetSceneObject(0).getLocZ());
 		},
     
-    //mit� tehd��n scenelle, kun appi suljetaan
+    //scene specific operations that are done when app is closed
 		Close: function(app, camera){
-			//app.GetSceneObject(0).setLoc(app.GetWindowObject().getLocX(),app.GetWindowObject().getLocY(),app.GetWindowObject().getLocZ());
 		}
     
 	};
@@ -128,20 +138,17 @@ var Lively3D = (function(Lively3D){
     
     Lively3D.THREE.scene.add( new THREE.AmbientLight( 0x404040 ) );
     
+    //GUIS MAIN WINDOW
     Lively3D.WIDGET.mainWindow = THREEJS_WIDGET3D.init(Lively3D.THREE.scene, Lively3D.THREE.renderer, Lively3D.THREE.camera);
     
     //T�SS� PIT�ISI OIKEASTI LUODA UUSI LIVELY3D SCENE....
-    //
-    //GRID on scenen malli ja periaatteessa mallin luominen pit�isi tapahtua scene� luodessa, ei t�ss� kohdassa.
-    //Scenen pit�� m��ritt�� addApplication -fuktio, jonka avulla appi saadaan luotua haluttuun esitystapaan ja
-    //scenen vaihtamiseen t�ytyy tehd� esitystavan muunnos jo olemassa oleville appeille.
-    Lively3D.WIDGET.grid = new THREEJS_WIDGET3D.GridWindow(2000, 2000, 0x6A8455.toString(16));
-    Lively3D.WIDGET.mainWindow.addChild(Lively3D.WIDGET.grid);
+    Scenes.push(DefaultScene);
+    Scenes[CurrentScene].Init();
+    console.log(Scenes[CurrentScene]);
     
-    //Gridin eventtihandlerit py�rittelylle.
-    Lively3D.WIDGET.grid.addEventListener(WIDGET3D.EventType.onmousedown, Lively3D.WIDGET.grid.mousedownHandler, Lively3D.WIDGET.grid);
-    Lively3D.WIDGET.grid.addEventListener(WIDGET3D.EventType.onmouseup, Lively3D.WIDGET.grid.mouseupHandler, Lively3D.WIDGET.grid);
-    Lively3D.WIDGET.grid.addEventListener(WIDGET3D.EventType.onmousemove, Lively3D.WIDGET.grid.mousemoveHandler, Lively3D.WIDGET.grid);
+    Lively3D.WIDGET.mainWindow.addChild(Scenes[CurrentScene].Model);
+    
+    
     
     //ANIMATION LOOP
     var lasttime=0;
@@ -151,15 +158,15 @@ var Lively3D = (function(Lively3D){
       requestAnimFrame(animLoop, canvas);
       now=parseInt(new Date().getTime());
       
-      //t�m�n pit�isi olla scenen render -funktio
-      Lively3D.WIDGET.grid.update();
+      //Updates scene
+      Scenes[CurrentScene].RenderingFunction(now, lasttime);
       
       //Updates applications texture (canvas)
       for(var i = 0; i < Applications.length; ++i){
         Applications[i].GetWindowObject().update();
       }
       
-      //Scenes[CurrentScene].GetModel().RenderingFunction(now, lasttime);
+      //the rendering function
       Lively3D.THREE.renderer.render(Lively3D.THREE.scene, Lively3D.THREE.camera);
       lasttime=now;
       
@@ -179,20 +186,14 @@ var Lively3D = (function(Lively3D){
 		var livelyapp = new Lively3D.Application();
 		Applications.push(livelyapp);
 		livelyapp.SetName(name).SetApplicationCode(AppCode).SetInitializationCode(AppInit);
+    
 		//run the app code and save app canvas
-		
 		var app = AppInit(AppCode);
-
 		var canvas = app.GetCanvas();
-	
 		livelyapp.SetStart(app.StartApp);
     
-    //T�SS� IKONI PIT�ISI LUODA SCENEN M��RITTELEM�LL� FUNKTIOLLA, JOTTA
-    //SCENEKOHTAINEN ESITYSTAPA TULISI HUOMIOITUA
-    var iconTexture = THREE.ImageUtils.loadTexture("../images/app.png");
-    var icon = new THREEJS_WIDGET3D.GridIcon(iconTexture, Lively3D.WIDGET.grid);
-    
-    
+    //creating a scene specific icon for the application   
+    var icon = Scenes[CurrentScene].CreateIcon();
     
     //create appcanvas texture fo application window
     var tex = new THREE.Texture(canvas);
@@ -204,7 +205,8 @@ var Lively3D = (function(Lively3D){
     //creating application window
     var display = new THREEJS_WIDGET3D.TitledWindow(name, 1500, 1500, material);
     Lively3D.WIDGET.mainWindow.addChild(display);
-    console.log(display);
+    
+    //drag & drop controlls are tide to application window titlebar
     display.title_.addEventListener(WIDGET3D.EventType.onmousedown, display.mousedownHandler, display);
     display.title_.addEventListener(WIDGET3D.EventType.onmouseup, display.mouseupHandler, display);
     display.title_.addEventListener(WIDGET3D.EventType.onmousemove, display.mousemoveHandler, display);
@@ -241,22 +243,15 @@ var Lively3D = (function(Lively3D){
     
 		app.SetLivelyApp(livelyapp);
     
-    //event handler for icon click.
-    var iconOnclick = function(event, livelyapp){
-      //KUN SCENE SAADAAN KORJATTUA, T�SS� KUTSUTAAN LIVELYN OPEN FUNKTIOTA.
-      //IKKUNAN N�YTT�MINEN JA FOKUSOIMINEN TAPAHTUU SIELL�.
-      livelyapp.Open();
-      livelyapp.GetWindowObject().show();
-      livelyapp.GetWindowObject().focus();
+    //event handler for icon doubleclick.
+    var iconOndblclick = function(event, livelyapp){
+      Lively3D.Open(livelyapp);
     };
-    icon.addEventListener(WIDGET3D.EventType.onclick, iconOnclick, livelyapp);
+    icon.addEventListener(WIDGET3D.EventType.ondblclick, iconOndblclick, livelyapp);
     
     //event handler for windows close button
     var closeDisplay = function(event, livelyapp){
-      //KUN SCENE SAADAAN KORJATTUA, T�SS� KUTSUTTAAN LIVELYN CLOSE FUNKTIOTA.
-      //IKKUNAN PIILOTTAMISEN PIT�ISI OLLA SIELL�.
-      livelyapp.Close();
-      livelyapp.GetWindowObject().hide();
+      Lively3D.Close(livelyapp);
     };
     display.closeButton_.addEventListener(WIDGET3D.EventType.onclick, closeDisplay, livelyapp);
     
@@ -378,10 +373,12 @@ var Lively3D = (function(Lively3D){
 	Lively3D.Open = function(app){
 		
     //kutsuu scenen open funktiota
-		Scenes[CurrentScene].GetModel().Open(app, Scenes[CurrentScene].GetScene());
-		
-    //t�ss� kohtaa pit�isi my�s kutsua appin ikkunalle show -funktiota
+		Scenes[CurrentScene].Open(app, null/*Scenes[CurrentScene].GetScene()*/);
+    
 		app.Open();
+    app.GetWindowObject().show();
+    app.GetWindowObject().focus();
+    
 	}
 
 	/**
@@ -395,11 +392,10 @@ var Lively3D = (function(Lively3D){
     
     //TODO: minimoi ikkuna, jos se oli maksimoitu!!
     
-    //t�ss� kohtaa pit�isi my�s kutsua appin ikkunalle hide -funktiota
 		app.Close();
-		
+    app.GetWindowObject().hide();
     //kutsuu scenen close objektia
-    Scenes[CurrentScene].GetModel().Close(app, Scenes[CurrentScene].GetScene());
+    Scenes[CurrentScene]/*.GetModel()*/.Close(app, null/*Scenes[CurrentScene].GetScene()*/);
 	}
 	
 	
