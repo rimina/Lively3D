@@ -133,7 +133,7 @@ var Lively3D = (function(Lively3D){
     
     //MAIN CAMERA
     Lively3D.THREE.camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 1, 10000);
-    Lively3D.THREE.camera.position.z = 1600;
+    Lively3D.THREE.camera.position.z = 2000;
     Lively3D.THREE.scene.add( Lively3D.THREE.camera );
     
     Lively3D.THREE.scene.add( new THREE.AmbientLight( 0x404040 ) );
@@ -144,7 +144,6 @@ var Lively3D = (function(Lively3D){
     //T�SS� PIT�ISI OIKEASTI LUODA UUSI LIVELY3D SCENE....
     Scenes.push(DefaultScene);
     Scenes[CurrentScene].Init();
-    console.log(Scenes[CurrentScene]);
     
     Lively3D.WIDGET.mainWindow.addChild(Scenes[CurrentScene].Model);
     
@@ -348,7 +347,10 @@ var Lively3D = (function(Lively3D){
     var window = arguments.app.GetWindowObject();
     
     var normalX = ((window.mousePosition_.x - (-window.width_  / 2.0)) / (window.width_ ));
-    var normalY = /*1.0 -*/((window.mousePosition_.z - (-window.height_ / 2.0)) / (window.height_));
+    
+    //planegeometry is represented in xz plane and it's just rotated to right position
+    //that's why in planes up is z. for other objects up is y.
+    var normalY = ((window.mousePosition_.z - (-window.height_ / 2.0)) / (window.height_));
     
     var canvasWidth = window.mesh_.material.map.image.width;
     var canvasHeight = window.mesh_.material.map.image.height;
@@ -367,9 +369,6 @@ var Lively3D = (function(Lively3D){
 		Opens given Lively3D Application in every 3D-scene.
 		@param app Lively3D Application
 	*/
-  
-  //Kutsutaan, kun appia klikataan
-  //VOI K�YTT�� VASTA KUN SCENET ON KORJATTU
 	Lively3D.Open = function(app){
 		
     //kutsuu scenen open funktiota
@@ -385,9 +384,6 @@ var Lively3D = (function(Lively3D){
 		Closes given Lively3D Application in every 3D-scene.
 		@param app Lively3D Application
 	*/
-  
-  //TODO: REDO
-  //VOI K�YTT�� VASTA KUN SCENET ON KORJATTU
 	Lively3D.Close = function(app){
     
     //TODO: minimoi ikkuna, jos se oli maksimoitu!!
