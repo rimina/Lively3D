@@ -174,8 +174,8 @@ var Lively3D = (function(Lively3D){
     animLoop();
 	}
   
-  var createGUI = funcion(){
-  };
+  var createGUI = function(){
+  }
 	
 	/**
 		Adds new canvas-application to the Lively3D-environment.
