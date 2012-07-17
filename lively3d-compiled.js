@@ -69,10 +69,6 @@ var Lively3D = (function(Lively3D){
     
     Icon: null,
     
-    Controlls : null,
-    
-    Clk: null,
-    
     //creates the object related to scene and
     //initializes it to be ready for use
     Init: function(){
@@ -83,46 +79,30 @@ var Lively3D = (function(Lively3D){
       this.Model.addEventListener(WIDGET3D.EventType.onmouseup, this.Model.mouseupHandler, this.Model);
       this.Model.addEventListener(WIDGET3D.EventType.onmousemove, this.Model.mousemoveHandler, this.Model);
       
-      this.Controlls = new THREE.FirstPersonControls(Lively3D.THREE.camera, Lively3D.THREE.renderer.domElement);
-      this.Clk = new THREE.Clock();
-      
       Lively3D.THREE.camera.lookAt(this.Model.getLocation());
-      console.log(this.Controlls);
     },
     
     //creates a scene specific icon for the application
-    CreateIcon: function(){
+    CreateApplication: function(appCanvas){
     
       var iconTexture = THREE.ImageUtils.loadTexture("../images/app.png");
-      this.Icon = new THREEJS_WIDGET3D.GridIcon(iconTexture, this.Model);
-      return this.Icon;
+      var material = new THREE.MeshBasicMaterial( { color: 0x00EE55, map: iconTexture } );
+      
+      var icon = new THREEJS_WIDGET3D.GridIcon(material, this.Model);
+      return icon;
     },
     
     //animatingfunction for scene
 		RenderingFunction: function(now, lastTime){
       this.Model.update();
-      this.Controlls.update(this.Clk.getDelta());
     },
     
     //scene specific operations that are done when app is opened
 		Open: function(app, camera){
-      if(applicationsInRun == 0){
-        this.Controlls.freeze = true;
-        //Lively3D.THREE.camera.position.z = 3000;
-        //Lively3D.THREE.camera.position.x = 0;
-        //Lively3D.THREE.camera.position.y = 0;
-        //Lively3D.THREE.camera.lookAt(app.GetWindowObject().getLocation());
-      }
-      //Lively3D.THREE.camera.lookAt(app.GetWindowObject().getLocation());
 		},
     
     //scene specific operations that are done when app is closed
 		Close: function(app, camera){
-      
-      if(applicationsInRun == 0){
-        this.Controlls.freeze = false;
-        Lively3D.THREE.camera.lookAt(this.Model.getLocation());
-      }
 		}
     
 	};
@@ -158,7 +138,7 @@ var Lively3D = (function(Lively3D){
     
     //MAIN CAMERA
     Lively3D.THREE.camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 1, 10000);
-    Lively3D.THREE.camera.position.z = 3000;
+    Lively3D.THREE.camera.position.z = 2800;
     Lively3D.THREE.scene.add( Lively3D.THREE.camera );
     
     Lively3D.THREE.scene.add( new THREE.AmbientLight( 0x404040 ) );
@@ -166,11 +146,11 @@ var Lively3D = (function(Lively3D){
     //GUIS MAIN WINDOW
     Lively3D.WIDGET.mainWindow = THREEJS_WIDGET3D.init(Lively3D.THREE.scene, Lively3D.THREE.renderer, Lively3D.THREE.camera);
     
-    //T�SS� PIT�ISI OIKEASTI LUODA UUSI LIVELY3D SCENE....
-    Scenes.push(DefaultScene);
-    Scenes[CurrentScene].Init();
+    Scenes.push( new Lively3D.Scene().SetScene(DefaultScene));
+    Scenes[CurrentScene].GetScene().Init();
+    Scenes[CurrentScene].SetModel(Scenes[CurrentScene].GetScene().Model);
     
-    Lively3D.WIDGET.mainWindow.addChild(Scenes[CurrentScene].Model);
+    Lively3D.WIDGET.mainWindow.addChild(Scenes[CurrentScene].GetModel());
     
     
     
@@ -183,7 +163,7 @@ var Lively3D = (function(Lively3D){
       now=parseInt(new Date().getTime());
       
       //Updates scene
-      Scenes[CurrentScene].RenderingFunction(now, lasttime);
+      Scenes[CurrentScene].GetScene().RenderingFunction(now, lasttime);
       
       //Updates applications texture (canvas)
       for(var i = 0; i < Applications.length; ++i){
@@ -218,9 +198,6 @@ var Lively3D = (function(Lively3D){
 		var canvas = app.GetCanvas();
 		livelyapp.SetStart(app.StartApp);
     
-    //creating a scene specific icon for the application   
-    var icon = Scenes[CurrentScene].CreateIcon();
-    
     //create appcanvas texture fo application window
     var tex = new THREE.Texture(canvas);
     var material = new THREE.MeshBasicMaterial({
@@ -231,6 +208,9 @@ var Lively3D = (function(Lively3D){
     //creating application window
     var display = new THREEJS_WIDGET3D.TitledWindow(name, 1500, 1500, material);
     Lively3D.WIDGET.mainWindow.addChild(display);
+    
+    //creating a scene specific icon for the application   
+    var icon = Scenes[CurrentScene].GetScene().CreateApplication(canvas);
     
     //drag & drop controlls are tide to application window titlebar
     display.title_.addEventListener(WIDGET3D.EventType.onmousedown, display.mousedownHandler, display);
@@ -440,7 +420,7 @@ var Lively3D = (function(Lively3D){
 	Lively3D.Open = function(app){
 		
     //kutsuu scenen open funktiota
-		Scenes[CurrentScene].Open(app, null/*Scenes[CurrentScene].GetScene()*/);
+		Scenes[CurrentScene].GetScene().Open(app, null/*Scenes[CurrentScene].GetScene()*/);
     
 		app.Open();
     app.GetWindowObject().show();
@@ -461,7 +441,7 @@ var Lively3D = (function(Lively3D){
 		app.Close();
     app.GetWindowObject().hide();
     //kutsuu scenen close objektia
-    Scenes[CurrentScene]/*.GetModel()*/.Close(app, null/*Scenes[CurrentScene].GetScene()*/);
+    Scenes[CurrentScene].GetScene().Close(app, null/*Scenes[CurrentScene].GetScene()*/);
 	}
 	
 	
