@@ -122,6 +122,16 @@ SOFTWARE.
 		this.Minimize = function(){
 			maximized = false;
 		}
+    
+    var icon;
+    
+    this.SetIcon = function(obj){
+      icon = obj;
+    }
+    
+    this.GetIcon = function(){
+      return icon;
+    }
 		
 		var SceneObjects = [];
 		/**

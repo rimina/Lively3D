@@ -57,7 +57,25 @@ var Lively3D = (function(Lively3D){
     /** Convas */
     mainWindow : null
   };
-	
+  
+  /**
+    @namespace Holds GUI widget related variables.
+  */
+  Lively3D.GUI = {
+    usernameDialog : null,
+    saveStateDialog : null,
+    loadStateDialog : null,
+    addApplicationDialog : null,
+    loadSceneDialog : null,
+    
+    switchButton : null,
+    loadSceneButton : null,
+    loadDesktopButton: null,
+    addApplicationButton : null,
+    syncbutton : null,
+    infoButton : null
+  };
+  
 	var Scenes = [];
 	var CurrentScene = 0;
 	
@@ -149,10 +167,9 @@ var Lively3D = (function(Lively3D){
     Scenes.push( new Lively3D.Scene().SetScene(DefaultScene));
     Scenes[CurrentScene].GetScene().Init();
     Scenes[CurrentScene].SetModel(Scenes[CurrentScene].GetScene().Model);
-    
     Lively3D.WIDGET.mainWindow.addChild(Scenes[CurrentScene].GetModel());
     
-    
+    createGUI();
     
     //ANIMATION LOOP
     var lasttime=0;
@@ -179,6 +196,24 @@ var Lively3D = (function(Lively3D){
 	}
   
   var createGUI = function(){
+  
+    Lively3D.GUI.usernameDialog = new THREEJS_WIDGET3D.Dialog({text : "Enter Username", buttonText : "Ok"});
+    Lively3D.GUI.usernameDialog.setZ(1500);
+    
+    Lively3D.WIDGET.mainWindow.addChild(Lively3D.GUI.usernameDialog);
+    
+    var okButtonOnclick = function(event, parameters){
+      if(parameters.dialog.textBox_.string_.length > 0){
+        //tässä pitäisi tallettaa käyttäjänimi johonkin jne.
+        parameters.dialog.remove();
+        parameters.scene.show();
+      }
+    }
+    Lively3D.GUI.usernameDialog.button_.addEventListener(WIDGET3D.EventType.onclick, okButtonOnclick,
+      {dialog: Lively3D.GUI.usernameDialog, scene : Scenes[CurrentScene].GetModel()});
+    Lively3D.GUI.usernameDialog.focus();
+    Lively3D.WIDGET.mainWindow.hideNotFocused();
+    
   }
 	
 	/**
@@ -230,6 +265,7 @@ var Lively3D = (function(Lively3D){
     display.hide();
     
     livelyapp.SetWindowObject(display);
+    livelyapp.SetIcon(icon);
 		
 		if ( app.GetState ){
 			livelyapp.SetSave(app.GetState);
