@@ -45,16 +45,13 @@ var Lively3D = (function(Lively3D){
     /** Three.js Renderer */
     renderer: null,
     /** Three.js Camera */
-    camera: null,
-    /** Three.js Scene */
-    scene: null
+    camera: null
   };
   
   /**
     @namespace Holds WIDGET3D related variables.
   */
   Lively3D.WIDGET = {
-    /** Convas */
     mainWindow : null
   };
   
@@ -73,13 +70,14 @@ var Lively3D = (function(Lively3D){
     loadDesktopButton: null,
     addApplicationButton : null,
     syncbutton : null,
-    infoButton : null
+    infoButton : null,
+    
+    menu : null
   };
   
 	var Scenes = [];
 	var CurrentScene = 0;
 	
-  //TODO: GRID LAYOUT WINDOWSTA DEFAULT SCENE
 	var DefaultScene = {
 		Id:'mainscene',
     
@@ -91,22 +89,22 @@ var Lively3D = (function(Lively3D){
     //initializes it to be ready for use
     Init: function(){
     
-      this.Model = new THREEJS_WIDGET3D.GridWindow(2000, 2000, 0x6A8455.toString(16));
-
-      this.Model.addEventListener(WIDGET3D.EventType.onmousedown, this.Model.mousedownHandler, this.Model);
-      this.Model.addEventListener(WIDGET3D.EventType.onmouseup, this.Model.mouseupHandler, this.Model);
-      this.Model.addEventListener(WIDGET3D.EventType.onmousemove, this.Model.mousemoveHandler, this.Model);
+      this.Model = new THREEJS_WIDGET3D.GridWindow({width: 2000,
+        height: 2000,
+        color:0x6A8455,
+        defaultControls : true});
       
+      this.Model.setZ(200);
       Lively3D.THREE.camera.lookAt(this.Model.getLocation());
     },
     
     //creates a scene specific icon for the application
     CreateApplication: function(appCanvas){
     
-      var iconTexture = THREE.ImageUtils.loadTexture("../images/app.png");
-      var material = new THREE.MeshBasicMaterial( { color: 0x00EE55, map: iconTexture } );
+      var icon = new THREEJS_WIDGET3D.GridIcon({picture : "../images/app.png",
+        color : 0x00EE55,
+        parent : this.Model});
       
-      var icon = new THREEJS_WIDGET3D.GridIcon(material, this.Model);
       return icon;
     },
     
@@ -134,35 +132,23 @@ var Lively3D = (function(Lively3D){
 	*/
 	Lively3D.Init = function(canvas){
 		
-		var userform = $("<h1>Enter Username</h1>Username: <input type='text' name='username' id='username'/><h3 onclick='Lively3D.UI.EnterUsername()'>Ok</h3>");
-		Lively3D.UI.ShowHTML(userform, true);
-		
 		if ( !canvas ){
 			canvasName = canvasDefault;
 		}
 		else{
 			canvasName = canvas;
 		}
-	
 		var canvas = document.getElementById(canvasName);
     
+    //creating renderer
     Lively3D.THREE.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true, autoClear: false});
     Lively3D.THREE.renderer.setClearColorHex( 0xf9f9f9, 1);
     Lively3D.THREE.renderer.setSize(canvas.width, canvas.height);
   
-  
-    //MAIN SCENE
-    Lively3D.THREE.scene = new THREE.Scene();
-    
-    //MAIN CAMERA
-    Lively3D.THREE.camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 1, 10000);
+    //Initialising widget library
+    Lively3D.WIDGET.mainWindow = THREEJS_WIDGET3D.init({renderer : Lively3D.THREE.renderer});
+    Lively3D.THREE.camera = THREEJS_WIDGET3D.camera;
     Lively3D.THREE.camera.position.z = 2800;
-    Lively3D.THREE.scene.add( Lively3D.THREE.camera );
-    
-    Lively3D.THREE.scene.add( new THREE.AmbientLight( 0x404040 ) );
-    
-    //GUIS MAIN WINDOW
-    Lively3D.WIDGET.mainWindow = THREEJS_WIDGET3D.init(Lively3D.THREE.scene, Lively3D.THREE.renderer, Lively3D.THREE.camera);
     
     Scenes.push( new Lively3D.Scene().SetScene(DefaultScene));
     Scenes[CurrentScene].GetScene().Init();
@@ -187,7 +173,7 @@ var Lively3D = (function(Lively3D){
         Applications[i].GetWindowObject().update();
       }
       //the rendering function
-      Lively3D.THREE.renderer.render(Lively3D.THREE.scene, Lively3D.THREE.camera);
+      THREEJS_WIDGET3D.render()
       lasttime=now;
       
     }
@@ -204,13 +190,31 @@ var Lively3D = (function(Lively3D){
     
     var okButtonOnclick = function(event, parameters){
       if(parameters.dialog.textBox_.string_.length > 0){
-        //t�ss� pit�isi tallettaa k�ytt�j�nimi johonkin jne.
+        Lively3D.SetUsername(parameters.dialog.textBox_.string_);
         parameters.dialog.remove();
         parameters.scene.show();
+        parameters.gui.menu.show();
       }
     }
+      
+    var choices = [];
+    choices.push({string : "Load Application", onclick: {handler : Lively3D.UI.ShowAppList, parameters : {Lively3D : Lively3D}}});
+    choices.push({string : "Save Desktop", onclick: {handler : Lively3D.UI.ShowSaveDialog, parameters : undefined}});
+    choices.push({string : "Load Desktop", onclick: {handler : Lively3D.UI.ShowStateList, parameters : undefined}});
+    choices.push({string : "Load Scene", onclick: {handler : Lively3D.UI.ShowSceneList, parameters : undefined}});
+    choices.push({string : "Switch Scene", onclick: {handler : Lively3D.ChangeScene, parameters : undefined}});
+    choices.push({string : "Use Node.js", onclick: {handler : Lively3D.UI.ToggleNode, parameters : undefined}});
+    choices.push({string : "About", onclick: {handler : Lively3D.UI.ShowAbout, parameters : undefined}});
+    choices.push({string : "Sync for local usage", onclick: {handler : Lively3D.Sync, parameters : undefined}});
+    
+    Lively3D.GUI.menu = new THREEJS_WIDGET3D.SelectDialog({width : 1300, height : 3500, text: "Menu", choices : choices});
+    Lively3D.GUI.menu.setLocation(-2750, 250, -100);
+    Lively3D.GUI.menu.setRotX(-Math.PI/100.0);
+    Lively3D.WIDGET.mainWindow.addChild(Lively3D.GUI.menu);
+    
     Lively3D.GUI.usernameDialog.button_.addEventListener(WIDGET3D.EventType.onclick, okButtonOnclick,
-      {dialog: Lively3D.GUI.usernameDialog, scene : Scenes[CurrentScene].GetModel()});
+      {dialog: Lively3D.GUI.usernameDialog, scene : Scenes[CurrentScene].GetModel(), gui : Lively3D.GUI });
+    
     Lively3D.GUI.usernameDialog.focus();
     Lively3D.WIDGET.mainWindow.hideNotFocused();
     
@@ -241,16 +245,16 @@ var Lively3D = (function(Lively3D){
     tex.needsUpdate = true;
     
     //creating application window
-    var display = new THREEJS_WIDGET3D.TitledWindow(name, 1500, 1500, material);
+    var display = new THREEJS_WIDGET3D.TitledWindow({title : name, 
+      width  : 1500,
+      height : 1500,
+      material : material,
+      defaultControls : true});
     Lively3D.WIDGET.mainWindow.addChild(display);
     
     //creating a scene specific icon for the application   
     var icon = Scenes[CurrentScene].GetScene().CreateApplication(canvas);
     
-    //drag & drop controlls are tide to application window titlebar
-    display.title_.addEventListener(WIDGET3D.EventType.onmousedown, display.mousedownHandler, display);
-    display.title_.addEventListener(WIDGET3D.EventType.onmouseup, display.mouseupHandler, display);
-    display.title_.addEventListener(WIDGET3D.EventType.onmousemove, display.mousemoveHandler, display);
     
     //updatefunction for application window
     var updateDisplay = function(display){
@@ -1139,15 +1143,15 @@ SOFTWARE.
 	/**
 		Shows application list.
 	*/
-	Lively3D.UI.ShowAppList = function(){
-		if ( this.HTTPServers.LOCAL.inUse == true ){
-			Lively3D.Proxies.Local.ShowAppList();
+	Lively3D.UI.ShowAppList = function(event, parameters){
+		if ( parameters.Lively3D.UI.HTTPServers.LOCAL.inUse == true ){
+			parameters.Lively3D.Proxies.Local.ShowAppList();
 		}
-		else if ( this.HTTPServers.PROXY.inUse == true ){
-			Lively3D.Proxies.PHP.ShowAppList();
+		else if ( parameters.Lively3D.UI.HTTPServers.PROXY.inUse == true ){
+			parameters.Lively3D.Proxies.PHP.ShowAppList();
 		}
 		else{
-			Lively3D.Proxies.Node.ShowAppList();
+			parameters.Lively3D.Proxies.Node.ShowAppList();
 		}
 	}
 	
@@ -1156,10 +1160,10 @@ SOFTWARE.
 		@param app Application name.
 	*/
 	Lively3D.UI.LoadApplication = function(app){
-		if ( this.HTTPServers.LOCAL.inUse == true ){
+		if ( Lively3D.UI.HTTPServers.LOCAL.inUse == true ){
 			Lively3D.Proxies.Local.LoadApplication(app);
 		}
-		else if ( this.HTTPServers.PROXY.inUse == true ){
+		else if ( Lively3D.UI.HTTPServers.PROXY.inUse == true ){
 			Lively3D.Proxies.PHP.LoadApplication(app);
 		}
 		else{

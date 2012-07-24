@@ -68,15 +68,15 @@ SOFTWARE.
 	/**
 		Shows application list.
 	*/
-	Lively3D.UI.ShowAppList = function(){
-		if ( this.HTTPServers.LOCAL.inUse == true ){
-			Lively3D.Proxies.Local.ShowAppList();
+	Lively3D.UI.ShowAppList = function(event, parameters){
+		if ( parameters.Lively3D.UI.HTTPServers.LOCAL.inUse == true ){
+			parameters.Lively3D.Proxies.Local.ShowAppList();
 		}
-		else if ( this.HTTPServers.PROXY.inUse == true ){
-			Lively3D.Proxies.PHP.ShowAppList();
+		else if ( parameters.Lively3D.UI.HTTPServers.PROXY.inUse == true ){
+			parameters.Lively3D.Proxies.PHP.ShowAppList();
 		}
 		else{
-			Lively3D.Proxies.Node.ShowAppList();
+			parameters.Lively3D.Proxies.Node.ShowAppList();
 		}
 	}
 	
@@ -85,10 +85,10 @@ SOFTWARE.
 		@param app Application name.
 	*/
 	Lively3D.UI.LoadApplication = function(app){
-		if ( this.HTTPServers.LOCAL.inUse == true ){
+		if ( Lively3D.UI.HTTPServers.LOCAL.inUse == true ){
 			Lively3D.Proxies.Local.LoadApplication(app);
 		}
-		else if ( this.HTTPServers.PROXY.inUse == true ){
+		else if ( Lively3D.UI.HTTPServers.PROXY.inUse == true ){
 			Lively3D.Proxies.PHP.LoadApplication(app);
 		}
 		else{
