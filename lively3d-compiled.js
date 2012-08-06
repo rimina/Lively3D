@@ -72,7 +72,46 @@ var Lively3D = (function(Lively3D){
     syncbutton : null,
     infoButton : null,
     
-    menu : null
+    menu : null,
+    
+    create : function(){
+    
+      Lively3D.GUI.usernameDialog = new THREEJS_WIDGET3D.Dialog({text : "Enter Username", buttonText : "Ok", color: 0x92CCA6});
+      Lively3D.GUI.usernameDialog.setZ(1500);
+      
+      Lively3D.WIDGET.mainWindow.addChild(Lively3D.GUI.usernameDialog);
+      
+      var okButtonOnclick = function(event, parameters){
+        if(parameters.dialog.textBox_.string_.length > 0){
+          Lively3D.SetUsername(parameters.dialog.textBox_.string_);
+          parameters.dialog.remove();
+          parameters.scene.show();
+          parameters.gui.menu.show();
+        }
+      }
+        
+      var choices = [];
+      choices.push({string : "Load Application", onclick: {handler : Lively3D.UI.ShowAppList, parameters : {Lively3D : Lively3D}}});
+      choices.push({string : "Save Desktop", onclick: {handler : Lively3D.UI.ShowSaveDialog, parameters : {Lively3D : Lively3D}}});
+      choices.push({string : "Load Desktop", onclick: {handler : Lively3D.UI.ShowStateList, parameters : {Lively3D : Lively3D}}});
+      choices.push({string : "Load Scene", onclick: {handler : Lively3D.UI.ShowSceneList, parameters : {Lively3D : Lively3D}}});
+      choices.push({string : "Switch Scene", onclick: {handler : Lively3D.ChangeScene, parameters : {Lively3D : Lively3D}}});
+      choices.push({string : "Use Node.js", onclick: {handler : Lively3D.UI.ToggleNode, parameters : {Lively3D : Lively3D}}});
+      choices.push({string : "About", onclick: {handler : Lively3D.UI.ShowAbout, parameters : {Lively3D : Lively3D}}});
+      choices.push({string : "Sync for local usage", onclick: {handler : Lively3D.Sync, parameters : {Lively3D : Lively3D}}});
+      
+      Lively3D.GUI.menu = new THREEJS_WIDGET3D.SelectDialog({width : 1300, height : 3500, choices : choices, color: 0x92CCA6});
+      Lively3D.GUI.menu.setLocation(-2750, 250, -100);
+      Lively3D.GUI.menu.setRotX(-Math.PI/100.0);
+      Lively3D.WIDGET.mainWindow.addChild(Lively3D.GUI.menu);
+      
+      Lively3D.GUI.usernameDialog.button_.addEventListener(WIDGET3D.EventType.onclick, okButtonOnclick,
+        {dialog: Lively3D.GUI.usernameDialog, scene : Scenes[CurrentScene].GetModel(), gui : Lively3D.GUI });
+      
+      Lively3D.GUI.usernameDialog.focus();
+      Lively3D.WIDGET.mainWindow.hideNotFocused();
+      
+    }
   };
   
 	var Scenes = [];
@@ -91,7 +130,7 @@ var Lively3D = (function(Lively3D){
     
       this.Model = new THREEJS_WIDGET3D.GridWindow({width: 2000,
         height: 2000,
-        color:0x6A8455,
+        color: 0x6A8455,
         defaultControls : true});
       
       this.Model.setZ(200);
@@ -155,7 +194,7 @@ var Lively3D = (function(Lively3D){
     Scenes[CurrentScene].SetModel(Scenes[CurrentScene].GetScene().Model);
     Lively3D.WIDGET.mainWindow.addChild(Scenes[CurrentScene].GetModel());
     
-    createGUI();
+    Lively3D.GUI.create();
     
     //ANIMATION LOOP
     var lasttime=0;
@@ -170,7 +209,10 @@ var Lively3D = (function(Lively3D){
       
       //Updates applications texture (canvas)
       for(var i = 0; i < Applications.length; ++i){
-        Applications[i].GetWindowObject().update();
+        var window = Applications[i].GetWindowObject();
+        if(window.isVisible_){
+          window.update();
+        }
       }
       //the rendering function
       THREEJS_WIDGET3D.render()
@@ -180,45 +222,6 @@ var Lively3D = (function(Lively3D){
 
     animLoop();
 	}
-  
-  var createGUI = function(){
-  
-    Lively3D.GUI.usernameDialog = new THREEJS_WIDGET3D.Dialog({text : "Enter Username", buttonText : "Ok"});
-    Lively3D.GUI.usernameDialog.setZ(1500);
-    
-    Lively3D.WIDGET.mainWindow.addChild(Lively3D.GUI.usernameDialog);
-    
-    var okButtonOnclick = function(event, parameters){
-      if(parameters.dialog.textBox_.string_.length > 0){
-        Lively3D.SetUsername(parameters.dialog.textBox_.string_);
-        parameters.dialog.remove();
-        parameters.scene.show();
-        parameters.gui.menu.show();
-      }
-    }
-      
-    var choices = [];
-    choices.push({string : "Load Application", onclick: {handler : Lively3D.UI.ShowAppList, parameters : {Lively3D : Lively3D}}});
-    choices.push({string : "Save Desktop", onclick: {handler : Lively3D.UI.ShowSaveDialog, parameters : undefined}});
-    choices.push({string : "Load Desktop", onclick: {handler : Lively3D.UI.ShowStateList, parameters : undefined}});
-    choices.push({string : "Load Scene", onclick: {handler : Lively3D.UI.ShowSceneList, parameters : undefined}});
-    choices.push({string : "Switch Scene", onclick: {handler : Lively3D.ChangeScene, parameters : undefined}});
-    choices.push({string : "Use Node.js", onclick: {handler : Lively3D.UI.ToggleNode, parameters : undefined}});
-    choices.push({string : "About", onclick: {handler : Lively3D.UI.ShowAbout, parameters : undefined}});
-    choices.push({string : "Sync for local usage", onclick: {handler : Lively3D.Sync, parameters : undefined}});
-    
-    Lively3D.GUI.menu = new THREEJS_WIDGET3D.SelectDialog({width : 1300, height : 3500, text: "Menu", choices : choices});
-    Lively3D.GUI.menu.setLocation(-2750, 250, -100);
-    Lively3D.GUI.menu.setRotX(-Math.PI/100.0);
-    Lively3D.WIDGET.mainWindow.addChild(Lively3D.GUI.menu);
-    
-    Lively3D.GUI.usernameDialog.button_.addEventListener(WIDGET3D.EventType.onclick, okButtonOnclick,
-      {dialog: Lively3D.GUI.usernameDialog, scene : Scenes[CurrentScene].GetModel(), gui : Lively3D.GUI });
-    
-    Lively3D.GUI.usernameDialog.focus();
-    Lively3D.WIDGET.mainWindow.hideNotFocused();
-    
-  }
 	
 	/**
 		Adds new canvas-application to the Lively3D-environment.
@@ -656,7 +659,7 @@ var Lively3D = (function(Lively3D){
 	/**
 		Switches to the next scene. If current scene is the last scene, switches to the first scene.
 	*/
-	Lively3D.ChangeScene = function(){
+	Lively3D.ChangeScene = function(event, parameters){
 		
 		/*for ( var i in Applications){
 			if ( Applications.hasOwnProperty(i)){
@@ -688,9 +691,9 @@ var Lively3D = (function(Lively3D){
 	/**
 		Syncs dropbox-contents to local filesystem if local node.js application is running.
 	*/
-	Lively3D.Sync = function(){
-		Lively3D.Proxies.Local.CheckAvailability(function(){
-			Lively3D.Proxies.Local.Sync();
+	Lively3D.Sync = function(event, parameters){
+		parameters.Lively3D.Proxies.Local.CheckAvailability(function(){
+			parameters.Lively3D.Proxies.Local.Sync();
 		});
 	}
 	
@@ -1096,6 +1099,7 @@ SOFTWARE.
 
 */
 (function(Lively3D){
+  
 	/**
 		@namespace Functions for user interface.
 	*/
@@ -1109,9 +1113,9 @@ SOFTWARE.
 	/**
 		Toggles between PHP- and Node.js proxies. Default is PHP-proxy.
 	*/
-	Lively3D.UI.ToggleNode = function(){
-		Lively3D.UI.HTTPServers.NODE.inUse = !Lively3D.UI.HTTPServers.NODE.inUse;
-		Lively3D.UI.HTTPServers.PROXY.inUse = !Lively3D.UI.HTTPServers.PROXY.inUse;
+	Lively3D.UI.ToggleNode = function(event, parameters){
+		parameters.Lively3D.UI.HTTPServers.NODE.inUse = !parameters.Lively3D.UI.HTTPServers.NODE.inUse;
+		parameters.Lively3D.UI.HTTPServers.PROXY.inUse = !parameters.Lively3D.UI.HTTPServers.PROXY.inUse;
 	}
 	
 	/**
@@ -1175,30 +1179,30 @@ SOFTWARE.
 	/**
 		Shows state list for current user.
 	*/
-	Lively3D.UI.ShowStateList = function(){
-		if ( this.HTTPServers.LOCAL.inUse == true ){
-			Lively3D.Proxies.Local.ShowStateList();
+	Lively3D.UI.ShowStateList = function(event, parameters){
+		if ( parameters.Lively3D.HTTPServers.UI.LOCAL.inUse == true ){
+			parameters.Lively3D.Proxies.Local.ShowStateList();
 		}
-		else if ( this.HTTPServers.PROXY.inUse == true ){
-			Lively3D.Proxies.PHP.ShowStateList();
+		else if ( parameters.Lively3D.UI.HTTPServers.PROXY.inUse == true ){
+			parameters.Lively3D.Proxies.PHP.ShowStateList();
 		}
 		else{
-			Lively3D.Proxies.Node.ShowStateList();
+			parameters.Lively3D.Proxies.Node.ShowStateList();
 		}
 	}
 	
 	/**
 		Shows Scene list.
 	*/
-	Lively3D.UI.ShowSceneList = function(){
-		if ( this.HTTPServers.LOCAL.inUse == true ){
-			Lively3D.Proxies.Local.ShowSceneList();
+	Lively3D.UI.ShowSceneList = function(event, parameters){
+		if ( parameters.Lively3D.UI.HTTPServers.LOCAL.inUse == true ){
+			parameters.Lively3D.Proxies.Local.ShowSceneList();
 		}
-		else if ( this.HTTPServers.PROXY.inUse == true ){
-			Lively3D.Proxies.PHP.ShowSceneList();
+		else if ( parameters.Lively3D.UI.HTTPServers.PROXY.inUse == true ){
+			parameters.Lively3D.Proxies.PHP.ShowSceneList();
 		}
 		else{
-			Lively3D.Proxies.Node.ShowSceneList();
+			parameters.Lively3D.Proxies.Node.ShowSceneList();
 		}
 	}
 	
@@ -1261,11 +1265,11 @@ SOFTWARE.
 	/**
 		Shows dialog for saving desktop state. User enter state name in the dialog.
 	*/
-	Lively3D.UI.ShowSaveDialog = function(){
+	Lively3D.UI.ShowSaveDialog = function(event, parameters){
 		var content = $('<h1>Save state</h1>State name:<input type="text" name="statename" id="statename"/><h3 onclick="Lively3D.UI.CloseSaveDialog();">Save</h3>');
-		this.ShowHTML(content);
-		tmpApp = Lively3D.GLGE.clickedObject;
-		Lively3D.GLGE.clickedObject = null;	
+		parameters.Lively3D.UI.ShowHTML(content);
+		//tmpApp = parameters.Lively3D.GLGE.clickedObject;
+		//parameters.Lively3D.GLGE.clickedObject = null;	
 	}
 	
 	/**
@@ -1289,9 +1293,9 @@ SOFTWARE.
 	/**
 		Shows about dialog.
 	*/
-	Lively3D.UI.ShowAbout = function(){
+	Lively3D.UI.ShowAbout = function(event, parameters){
 		var content = $("<h1>About</h1><p>Lively3D code made by Jari-Pekka Voutilainen</p><p>Applications developed by: Arto Salminen, Matti Anttonen, Anna-Liisa Mattila, Lotta Liikkanen, Jani Heininen, Mika V�lim�ki</p>");
-		this.ShowHTML(content);
+		parameters.Lively3D.ShowHTML(content);
 	}
 	
 	/**
@@ -1357,20 +1361,6 @@ SOFTWARE.
 		});
 	}
 	
-	
-	/**
-		Saves username from the original dialog.
-	*/
-	Lively3D.UI.EnterUsername = function(){
-		var name = $("#username");
-		if ( name[0].value.length != 0 ){
-			Lively3D.SetUsername(name[0].value);
-			this.CloseDialog();
-		}
-		else{
-			$("<h3>Please enter username</h3>").appendTo("#dialog");
-		}
-	}
 }(Lively3D));/*
 Copyright (C) 2012 Jari-Pekka Voutilainen
 

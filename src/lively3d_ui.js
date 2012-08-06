@@ -21,6 +21,7 @@ SOFTWARE.
 
 */
 (function(Lively3D){
+  
 	/**
 		@namespace Functions for user interface.
 	*/
@@ -34,9 +35,9 @@ SOFTWARE.
 	/**
 		Toggles between PHP- and Node.js proxies. Default is PHP-proxy.
 	*/
-	Lively3D.UI.ToggleNode = function(){
-		Lively3D.UI.HTTPServers.NODE.inUse = !Lively3D.UI.HTTPServers.NODE.inUse;
-		Lively3D.UI.HTTPServers.PROXY.inUse = !Lively3D.UI.HTTPServers.PROXY.inUse;
+	Lively3D.UI.ToggleNode = function(event, parameters){
+		parameters.Lively3D.UI.HTTPServers.NODE.inUse = !parameters.Lively3D.UI.HTTPServers.NODE.inUse;
+		parameters.Lively3D.UI.HTTPServers.PROXY.inUse = !parameters.Lively3D.UI.HTTPServers.PROXY.inUse;
 	}
 	
 	/**
@@ -100,30 +101,30 @@ SOFTWARE.
 	/**
 		Shows state list for current user.
 	*/
-	Lively3D.UI.ShowStateList = function(){
-		if ( this.HTTPServers.LOCAL.inUse == true ){
-			Lively3D.Proxies.Local.ShowStateList();
+	Lively3D.UI.ShowStateList = function(event, parameters){
+		if ( parameters.Lively3D.HTTPServers.UI.LOCAL.inUse == true ){
+			parameters.Lively3D.Proxies.Local.ShowStateList();
 		}
-		else if ( this.HTTPServers.PROXY.inUse == true ){
-			Lively3D.Proxies.PHP.ShowStateList();
+		else if ( parameters.Lively3D.UI.HTTPServers.PROXY.inUse == true ){
+			parameters.Lively3D.Proxies.PHP.ShowStateList();
 		}
 		else{
-			Lively3D.Proxies.Node.ShowStateList();
+			parameters.Lively3D.Proxies.Node.ShowStateList();
 		}
 	}
 	
 	/**
 		Shows Scene list.
 	*/
-	Lively3D.UI.ShowSceneList = function(){
-		if ( this.HTTPServers.LOCAL.inUse == true ){
-			Lively3D.Proxies.Local.ShowSceneList();
+	Lively3D.UI.ShowSceneList = function(event, parameters){
+		if ( parameters.Lively3D.UI.HTTPServers.LOCAL.inUse == true ){
+			parameters.Lively3D.Proxies.Local.ShowSceneList();
 		}
-		else if ( this.HTTPServers.PROXY.inUse == true ){
-			Lively3D.Proxies.PHP.ShowSceneList();
+		else if ( parameters.Lively3D.UI.HTTPServers.PROXY.inUse == true ){
+			parameters.Lively3D.Proxies.PHP.ShowSceneList();
 		}
 		else{
-			Lively3D.Proxies.Node.ShowSceneList();
+			parameters.Lively3D.Proxies.Node.ShowSceneList();
 		}
 	}
 	
@@ -186,11 +187,11 @@ SOFTWARE.
 	/**
 		Shows dialog for saving desktop state. User enter state name in the dialog.
 	*/
-	Lively3D.UI.ShowSaveDialog = function(){
+	Lively3D.UI.ShowSaveDialog = function(event, parameters){
 		var content = $('<h1>Save state</h1>State name:<input type="text" name="statename" id="statename"/><h3 onclick="Lively3D.UI.CloseSaveDialog();">Save</h3>');
-		this.ShowHTML(content);
-		tmpApp = Lively3D.GLGE.clickedObject;
-		Lively3D.GLGE.clickedObject = null;	
+		parameters.Lively3D.UI.ShowHTML(content);
+		//tmpApp = parameters.Lively3D.GLGE.clickedObject;
+		//parameters.Lively3D.GLGE.clickedObject = null;	
 	}
 	
 	/**
@@ -214,9 +215,9 @@ SOFTWARE.
 	/**
 		Shows about dialog.
 	*/
-	Lively3D.UI.ShowAbout = function(){
+	Lively3D.UI.ShowAbout = function(event, parameters){
 		var content = $("<h1>About</h1><p>Lively3D code made by Jari-Pekka Voutilainen</p><p>Applications developed by: Arto Salminen, Matti Anttonen, Anna-Liisa Mattila, Lotta Liikkanen, Jani Heininen, Mika Välimäki</p>");
-		this.ShowHTML(content);
+		parameters.Lively3D.ShowHTML(content);
 	}
 	
 	/**
@@ -282,18 +283,4 @@ SOFTWARE.
 		});
 	}
 	
-	
-	/**
-		Saves username from the original dialog.
-	*/
-	Lively3D.UI.EnterUsername = function(){
-		var name = $("#username");
-		if ( name[0].value.length != 0 ){
-			Lively3D.SetUsername(name[0].value);
-			this.CloseDialog();
-		}
-		else{
-			$("<h3>Please enter username</h3>").appendTo("#dialog");
-		}
-	}
 }(Lively3D));
