@@ -72,7 +72,6 @@ var Lively3D = (function(Lively3D){
         defaultControls : true});
       
       this.Model.setZ(200);
-      Lively3D.THREE.camera.lookAt(this.Model.getLocation());
       Lively3D.WIDGET.mainWindow.addChild(this.Model);
     },
     
@@ -268,7 +267,6 @@ var Lively3D = (function(Lively3D){
   };
   
   var maximize = function(window){
-    //window.container_.lookAt(Lively3D.THREE.camera.position);
     var loc = window.getLocation();
     var d = {x : Lively3D.THREE.camera.position.x - loc.x,
       y : Lively3D.THREE.camera.position.y - loc.y,
@@ -281,7 +279,6 @@ var Lively3D = (function(Lively3D){
   };
   
   var minimize = function(window){
-    //window.container_.lookAt(Lively3D.THREE.camera.position);
     var loc = window.getLocation();
     window.setLocation(loc.x - 0.3*window.d.x, loc.y - 0.3*window.d.y, loc.z - 0.3*window.d.z);
     console.log(window.getLocation());
@@ -992,15 +989,8 @@ SOFTWARE.
     usernameDialog : null,
     saveStateDialog : null,
     loadStateDialog : null,
-    addApplicationDialog : null,
+    addApp : null,
     loadSceneDialog : null,
-    
-    switchButton : null,
-    loadSceneButton : null,
-    loadDesktopButton: null,
-    addApplicationButton : null,
-    syncbutton : null,
-    infoButton : null,
     
     menu : null
   }
@@ -1098,7 +1088,7 @@ SOFTWARE.
 		Loads applications.
 		@param app Application name.
 	*/
-	Lively3D.UI.LoadApplication = function(app){
+	Lively3D.UI.LoadApplication = function(event, app){
 		if ( Lively3D.UI.HTTPServers.LOCAL.inUse == true ){
 			Lively3D.Proxies.Local.LoadApplication(app);
 		}
@@ -1338,16 +1328,18 @@ SOFTWARE.
 		
 			$.get("getFileList.php", {path: 'apps'}, function(list){
 				var files = JSON.parse(list);
-				var content = $("<h1>Select Application</h1><div></div>");
-				var element = content.last();
-				
+				var choices = []
+        
 				for ( var i in files ){
 					if ( files.hasOwnProperty(i)){
-						var entry = $("<span onclick=\"Lively3D.UI.LoadApplication('" + files[i] + "')\">" + files[i] + "</span></br>");
-						entry.appendTo(element);
+            console.log(files[i]);
+            choices.push({string : files[i], onclick: {handler : Lively3D.UI.LoadApplication, parameters : files[i]}});
 					}
 				}
-				Lively3D.UI.ShowHTML(content);
+        Lively3D.UI.Widgets.addApp = new THREEJS_WIDGET3D.SelectDialog({width : 1000, height : 1500, choices : choices,
+          color: 0x92CC66, text : "Select Application", hasCancel : true});
+        Lively3D.UI.Widgets.addApp.setLocation(0, 700, 450);
+        Lively3D.WIDGET.mainWindow.addChild(Lively3D.UI.Widgets.addApp);
 				
 			});
 		},
@@ -1358,7 +1350,7 @@ SOFTWARE.
 		*/
 		LoadApplication: function(app){
 			Lively3D.FileOperations.getScript(app, "apps/")
-			Lively3D.UI.CloseDialog();
+      Lively3D.UI.Widgets.addApp.remove();
 		},
 		
 		/**

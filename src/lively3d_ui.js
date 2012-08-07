@@ -36,15 +36,8 @@ SOFTWARE.
     usernameDialog : null,
     saveStateDialog : null,
     loadStateDialog : null,
-    addApplicationDialog : null,
+    addApp : null,
     loadSceneDialog : null,
-    
-    switchButton : null,
-    loadSceneButton : null,
-    loadDesktopButton: null,
-    addApplicationButton : null,
-    syncbutton : null,
-    infoButton : null,
     
     menu : null
   }
@@ -142,7 +135,7 @@ SOFTWARE.
 		Loads applications.
 		@param app Application name.
 	*/
-	Lively3D.UI.LoadApplication = function(app){
+	Lively3D.UI.LoadApplication = function(event, app){
 		if ( Lively3D.UI.HTTPServers.LOCAL.inUse == true ){
 			Lively3D.Proxies.Local.LoadApplication(app);
 		}

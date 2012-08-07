@@ -40,16 +40,18 @@ SOFTWARE.
 		
 			$.get("getFileList.php", {path: 'apps'}, function(list){
 				var files = JSON.parse(list);
-				var content = $("<h1>Select Application</h1><div></div>");
-				var element = content.last();
-				
+				var choices = []
+        
 				for ( var i in files ){
 					if ( files.hasOwnProperty(i)){
-						var entry = $("<span onclick=\"Lively3D.UI.LoadApplication('" + files[i] + "')\">" + files[i] + "</span></br>");
-						entry.appendTo(element);
+            console.log(files[i]);
+            choices.push({string : files[i], onclick: {handler : Lively3D.UI.LoadApplication, parameters : files[i]}});
 					}
 				}
-				Lively3D.UI.ShowHTML(content);
+        Lively3D.UI.Widgets.addApp = new THREEJS_WIDGET3D.SelectDialog({width : 1000, height : 1500, choices : choices,
+          color: 0x92CC66, text : "Select Application", hasCancel : true});
+        Lively3D.UI.Widgets.addApp.setLocation(0, 700, 450);
+        Lively3D.WIDGET.mainWindow.addChild(Lively3D.UI.Widgets.addApp);
 				
 			});
 		},
@@ -60,7 +62,7 @@ SOFTWARE.
 		*/
 		LoadApplication: function(app){
 			Lively3D.FileOperations.getScript(app, "apps/")
-			Lively3D.UI.CloseDialog();
+      Lively3D.UI.Widgets.addApp.remove();
 		},
 		
 		/**
