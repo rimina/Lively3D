@@ -31,6 +31,63 @@ SOFTWARE.
 		NODE: { inUse: false },
 		PROXY: { inUse: true }
 	}
+  
+  Lively3D.UI.Widgets = {
+    usernameDialog : null,
+    saveStateDialog : null,
+    loadStateDialog : null,
+    addApplicationDialog : null,
+    loadSceneDialog : null,
+    
+    switchButton : null,
+    loadSceneButton : null,
+    loadDesktopButton: null,
+    addApplicationButton : null,
+    syncbutton : null,
+    infoButton : null,
+    
+    menu : null
+  }
+  
+  Lively3D.UI.create = function(scene){
+  
+    Lively3D.UI.Widgets.usernameDialog = new THREEJS_WIDGET3D.Dialog({text : "Enter Username", buttonText : "Ok", color: 0x92CCA6});
+    Lively3D.UI.Widgets.usernameDialog.setZ(1500);
+    
+    Lively3D.WIDGET.mainWindow.addChild(Lively3D.UI.Widgets.usernameDialog);
+    
+    var okButtonOnclick = function(event, parameters){
+      if(parameters.dialog.textBox_.string_.length > 0){
+        parameters.Lively3D.SetUsername(parameters.dialog.textBox_.string_);
+        parameters.dialog.remove();
+        parameters.scene.show();
+        parameters.Lively3D.UI.Widgets.menu.show();
+      }
+    }
+      
+    var choices = [];
+    choices.push({string : "Load Application", onclick: {handler : Lively3D.UI.ShowAppList, parameters : {Lively3D : Lively3D}}});
+    choices.push({string : "Save Desktop", onclick: {handler : Lively3D.UI.ShowSaveDialog, parameters : {Lively3D : Lively3D}}});
+    choices.push({string : "Load Desktop", onclick: {handler : Lively3D.UI.ShowStateList, parameters : {Lively3D : Lively3D}}});
+    choices.push({string : "Load Scene", onclick: {handler : Lively3D.UI.ShowSceneList, parameters : {Lively3D : Lively3D}}});
+    choices.push({string : "Switch Scene", onclick: {handler : Lively3D.ChangeScene, parameters : {Lively3D : Lively3D}}});
+    choices.push({string : "Use Node.js", onclick: {handler : Lively3D.UI.ToggleNode, parameters : {Lively3D : Lively3D}}});
+    choices.push({string : "About", onclick: {handler : Lively3D.UI.ShowAbout, parameters : {Lively3D : Lively3D}}});
+    choices.push({string : "Sync for local usage", onclick: {handler : Lively3D.Sync, parameters : {Lively3D : Lively3D}}});
+    
+    Lively3D.UI.Widgets.menu = new THREEJS_WIDGET3D.SelectDialog({width : 1300, height : 3500, choices : choices, color: 0x92CCA6});
+    Lively3D.UI.Widgets.menu.setLocation(-2750, 250, -100);
+    Lively3D.UI.Widgets.menu.setRotX(-Math.PI/100.0);
+    Lively3D.WIDGET.mainWindow.addChild(Lively3D.UI.Widgets.menu);
+    
+    Lively3D.UI.Widgets.usernameDialog.button_.addEventListener(WIDGET3D.EventType.onclick, okButtonOnclick,
+      {dialog: Lively3D.UI.Widgets.usernameDialog, scene : scene.GetModel(), Lively3D : Lively3D });
+    
+    Lively3D.UI.Widgets.usernameDialog.focus();
+    Lively3D.WIDGET.mainWindow.hideNotFocused();
+    
+  }
+  
 	
 	/**
 		Toggles between PHP- and Node.js proxies. Default is PHP-proxy.

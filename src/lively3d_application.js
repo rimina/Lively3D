@@ -133,19 +133,6 @@ SOFTWARE.
       return icon;
     }
 		
-		var SceneObjects = [];
-		/**
-			Add new Scene object to the application.
-			@param obj The object that represents application within the scene.
-		*/
-		this.AddSceneObject = function(obj){
-			SceneObjects.push(obj);
-			if ( CurrentObject == null ){
-				CurrentObject = obj;
-			}
-			return this;
-		}
-		
 		var WindowObject;
 		/**
 			Set the application window object.
@@ -162,44 +149,7 @@ SOFTWARE.
 		this.GetWindowObject = function(){
 			return WindowObject;
 		}
-		
-		var CurrentObject;
-		
-		/**
-			Gets the current scene object within the scene.
-		*/
-		this.GetCurrentSceneObject = function(){
-			return CurrentObject;
-		}
-		
-		/**
-			Sets the current scene object.
-			@param {integer} index Index of the scene.
-		*/
-		this.SetCurrentSceneObject = function(index){
-			if ( index != null  && index >= 0 && index < SceneObjects.length ){
-				CurrentObject = SceneObjects[index];
-			}
-			else{
-				console.log("No such scene object");
-			}
-		}
-		
-		/**
-			Gets scene object for specified scene.
-			@param {integer} index Index of the scene.
-		*/
-		this.GetSceneObject = function(index){
-			if ( index != null  && index >= 0 && index < SceneObjects.length ){
-				return SceneObjects[index].group;
-			}
-			else{
-				console.log("No such scene object");
-			}
-		}
-		
-    
-    
+
     //APPLIKAATIORAJAPINTA
     
 		var Name;

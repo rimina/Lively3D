@@ -132,7 +132,7 @@ SOFTWARE.
 			Fetches scene list and shows it to the user.
 		*/
 		ShowSceneList: function(){
-			$.get("getFileList.php", {path: 'scenes'}, function(list){
+			$.get("getFileList.php", {path: 'world'}, function(list){
 				var files = JSON.parse(list);
 				var content = $('<h1>Select Scene</h1><div></div>');
 				var element = content.last();
@@ -152,7 +152,7 @@ SOFTWARE.
 			@param {string} file Name of the scene file.
 		*/
 		LoadScene: function(file){
-			Lively3D.FileOperations.getScript(file, "scenes/");
+			Lively3D.FileOperations.getScript(file, "world/");
 			Lively3D.UI.CloseDialog();
 		}		
 	};
