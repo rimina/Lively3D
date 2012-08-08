@@ -40,19 +40,7 @@ SOFTWARE.
 		
 			$.get("getFileList.php", {path: 'apps'}, function(list){
 				var files = JSON.parse(list);
-				var choices = []
-        
-				for ( var i in files ){
-					if ( files.hasOwnProperty(i)){
-            console.log(files[i]);
-            choices.push({string : files[i], onclick: {handler : Lively3D.UI.LoadApplication, parameters : files[i]}});
-					}
-				}
-        Lively3D.UI.Widgets.addApp = new THREEJS_WIDGET3D.SelectDialog({width : 1000, height : 1500, choices : choices,
-          color: 0x92CC66, text : "Select Application", hasCancel : true});
-        Lively3D.UI.Widgets.addApp.setLocation(0, 700, 450);
-        Lively3D.WIDGET.mainWindow.addChild(Lively3D.UI.Widgets.addApp);
-				
+        Lively3D.UI.createAppDialog(files);
 			});
 		},
 		
@@ -62,7 +50,7 @@ SOFTWARE.
 		*/
 		LoadApplication: function(app){
 			Lively3D.FileOperations.getScript(app, "apps/")
-      Lively3D.UI.Widgets.addApp.remove();
+      Lively3D.UI.Dialogs.addApp.remove();
 		},
 		
 		/**
@@ -107,7 +95,6 @@ SOFTWARE.
 			@param {string} filename Name of the statefile.
 		*/
 		LoadDesktop: function(filename){
-			
 			Lively3D.FileOperations.getJSON(filename, ParseDesktopJSON, "states/" + Lively3D.GetUsername() + '/');
 		},
 		
@@ -115,18 +102,9 @@ SOFTWARE.
 			Fetches statelist for the current username and shows it to the user.
 		*/
 		ShowStateList: function(){
-			
 			$.get("getFileList.php", {path: 'states/' + Lively3D.GetUsername()}, function(list){
 				var files = JSON.parse(list);
-				var content = $('<h1>Select State</h1><div></div>');
-				var element = content.last();
-				for ( var i in files ){
-					if ( files.hasOwnProperty(i)){
-						var entry = $("<span onclick=\"Lively3D.UI.LoadDesktop('" + files[i] + "')\">" + files[i] + "</span></br>");
-						entry.appendTo(element);
-					}
-				}
-				Lively3D.UI.ShowHTML(content);
+				Lively3D.UI.createStateDialog(files);
 			});
 		},
 		
@@ -136,16 +114,7 @@ SOFTWARE.
 		ShowSceneList: function(){
 			$.get("getFileList.php", {path: 'world'}, function(list){
 				var files = JSON.parse(list);
-				var content = $('<h1>Select Scene</h1><div></div>');
-				var element = content.last();
-				for ( var i in files ){
-					if ( files.hasOwnProperty(i)){
-						var entry = $("<span onclick=\"Lively3D.UI.LoadScene('" + files[i] + "')\">" + files[i] + "</span></br>");
-						entry.appendTo(element);
-					}
-				}
-				Lively3D.UI.ShowHTML(content);
-				
+        Lively3D.UI.createSceneDialog(files);
 			});
 		},
 		
@@ -155,7 +124,7 @@ SOFTWARE.
 		*/
 		LoadScene: function(file){
 			Lively3D.FileOperations.getScript(file, "world/");
-			Lively3D.UI.CloseDialog();
+			Lively3D.UI.Dialogs.loadScene.remove();
 		}		
 	};
 	
@@ -210,17 +179,7 @@ SOFTWARE.
 		ShowAppList: function(){
 		
 			$.get("/lively3d/node/filelist/apps", function(files){
-				
-				var content = $("<h1>Select Application</h1><div></div>");
-				var element = content.last();
-				for ( var i in files ){
-					if ( files.hasOwnProperty(i)){
-						var entry = $("<span onclick=\"Lively3D.UI.LoadApplication('" + files[i] + "')\">" + files[i] + "</span></br>");
-						entry.appendTo(element);
-					}
-				}
-				Lively3D.UI.ShowHTML(content);
-				
+        Lively3D.UI.createAppDialog(files);
 			});
 		},
 		
@@ -235,7 +194,7 @@ SOFTWARE.
 				script.src = scripturl;
 				document.head.appendChild(script);
 			});
-			Lively3D.UI.CloseDialog();
+			Lively3D.UI.Dialogs.addApp.remove();
 		},
 		
 		/**
@@ -346,17 +305,8 @@ SOFTWARE.
 			Fetches scene list and shows it to the user.
 		*/
 		ShowSceneList: function(){
-			$.get("/lively3d/node/filelist/scenes", function(files){
-				var content = $('<h1>Select Scene</h1><div></div>');
-				var element = content.last();
-				for ( var i in files ){
-					if ( files.hasOwnProperty(i)){
-						var entry = $("<span onclick=\"Lively3D.UI.LoadScene('" + files[i] + "')\">" + files[i] + "</span></br>");
-						entry.appendTo(element);
-					}
-				}
-				Lively3D.UI.ShowHTML(content);
-				
+			$.get("/lively3d/node/filelist/world", function(files){
+				Lively3D.UI.createSceneDialog(files);
 			});
 		},
 		/**
@@ -364,14 +314,13 @@ SOFTWARE.
 			@param {string} file Name of the scene file.
 		*/
 		LoadScene: function(file){
-			$.get('/lively3d/node/file/scenes/' + file, function(scripturl){
+			$.get('/lively3d/node/file/world/' + file, function(scripturl){
 				var script = document.createElement('script');
 				script.type = "text/javascript";
 				script.src = scripturl;
 				document.head.appendChild(script);
 			});
-			
-			Lively3D.UI.CloseDialog();
+			Lively3D.UI.Dialogs.loadScene.remove();
 		}
 	};	
 	
@@ -386,15 +335,7 @@ SOFTWARE.
 			$.ajax({
 				url: "http://127.0.0.1:8000/filelist/apps", 
 				success: function(files){
-					var content = $("<h1>Select Application</h1><div></div>");
-					var element = content.last();
-					for ( var i in files ){
-						if ( files.hasOwnProperty(i)){
-							var entry = $("<span onclick=\"Lively3D.UI.LoadApplication('" + files[i] + "')\">" + files[i] + "</span></br>");
-							entry.appendTo(element);
-						}
-					}
-					Lively3D.UI.ShowHTML(content);
+					Lively3D.UI.createAppDialog(files);
 				}
 			});
 		},
@@ -409,24 +350,15 @@ SOFTWARE.
 				script.src = scripturl;
 				document.head.appendChild(script);
 			});
-			Lively3D.UI.CloseDialog();
+			Lively3D.UI.Dialogs.addApp.remove();
 		},
 		
 		/**
 			Reads scene list and shows it to user.
 		*/
 		ShowSceneList: function(){
-			$.get("http://localhost:8000/filelist/scenes", function(files){
-				var content = $('<h1>Select Scene</h1><div></div>');
-				var element = content.last();
-				for ( var i in files ){
-					if ( files.hasOwnProperty(i)){
-						var entry = $("<span onclick=\"Lively3D.UI.LoadScene('" + files[i] + "')\">" + files[i] + "</span></br>");
-						entry.appendTo(element);
-					}
-				}
-				Lively3D.UI.ShowHTML(content);
-				
+			$.get("http://localhost:8000/filelist/world", function(files){
+				Lively3D.UI.createSceneDialog(files);
 			});
 		
 		},
@@ -436,13 +368,13 @@ SOFTWARE.
 			@param {script} file Filename of the scene.
 		*/
 		LoadScene: function(file){
-			$.get('http://localhost:8000/file/scenes/' + file, function(scripturl){
+			$.get('http://localhost:8000/file/world/' + file, function(scripturl){
 				var script = document.createElement('script');
 				script.type = "text/javascript";
 				script.src = scripturl;
 				document.head.appendChild(script);
 			});
-			Lively3D.UI.CloseDialog();
+			Lively3D.UI.Dialogs.loadScene.remove();
 		},
 		
 		/**
@@ -456,7 +388,7 @@ SOFTWARE.
 					if ( data.success == false ){
 						Lively3D.UI.ShowMessage(data.message);
 					}else{
-						callback()
+						callback();
 					}
 				},
 				error: function(){

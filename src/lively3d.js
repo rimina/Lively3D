@@ -43,16 +43,34 @@ var Lively3D = (function(Lively3D){
   */
   Lively3D.THREE = {
     /** Three.js Renderer */
-    renderer: null,
+    renderer : null,
     /** Three.js Camera */
-    camera: null
+    camera : null
   };
   
   /**
     @namespace Holds WIDGET3D related variables.
   */
   Lively3D.WIDGET = {
-    mainWindow : null
+    mainWindow : null,
+    
+    cameraGroup : null,
+    
+    addToCameraGroup : function(component){
+      if(this.cameraGroup){
+        var rot = this.cameraGroup.getRot();
+        var loc = this.cameraGroup.getLocation();
+        
+        this.cameraGroup.setLocation(0, 0, 0);
+        this.cameraGroup.setRot(0, 0, 0);
+        
+        this.cameraGroup.addChild(component);
+        
+        this.cameraGroup.setLocation(loc.x, loc.y, loc.z);
+        this.cameraGroup.setRot(rot.x, rot.y, rot.z);
+      }
+    }
+    
   };
   
 	var Scenes = [];
@@ -127,8 +145,16 @@ var Lively3D = (function(Lively3D){
   
     //Initialising widget library
     Lively3D.WIDGET.mainWindow = THREEJS_WIDGET3D.init({renderer : Lively3D.THREE.renderer});
+    Lively3D.WIDGET.cameraGroup = new WIDGET3D.Window();
+    Lively3D.WIDGET.mainWindow.addChild(Lively3D.WIDGET.cameraGroup);
+    
     Lively3D.THREE.camera = THREEJS_WIDGET3D.camera;
-    Lively3D.THREE.camera.position.z = 2800;
+    
+    Lively3D.WIDGET.cameraGroup.container_.add(Lively3D.THREE.camera);
+    Lively3D.WIDGET.cameraGroup.setZ(2800);
+    
+    //Lively3D.WIDGET.cameraGroup.setRotY(Math.PI/10.0);
+    //Lively3D.WIDGET.cameraGroup.setRotX(Math.PI/10.0);
     
     Scenes.push( new Lively3D.Scene().SetScene(DefaultScene));
     Scenes[CurrentScene].GetScene().Init();
@@ -193,7 +219,10 @@ var Lively3D = (function(Lively3D){
       height : 1500,
       material : material,
       defaultControls : true});
-    Lively3D.WIDGET.mainWindow.addChild(display);
+    
+    display.setZ(-1800);
+    
+    Lively3D.WIDGET.addToCameraGroup(display);
     
     //creating a scene specific icon for the application   
     var icon = Scenes[CurrentScene].GetScene().CreateApplication(canvas);
@@ -206,7 +235,6 @@ var Lively3D = (function(Lively3D){
       }
     };
     display.addUpdateCallback(updateDisplay, display);
-    display.setZ(1000);
     
     //app window is hidden until the app is opened
     display.hide();
@@ -316,7 +344,6 @@ var Lively3D = (function(Lively3D){
     
 	}
   
-  
   /**
 		AddEventListeners calls this function for every event key found,
     This function does the eventhandler binding to app window.
@@ -413,8 +440,7 @@ var Lively3D = (function(Lively3D){
 		@param app Lively3D Application
 	*/
 	Lively3D.Open = function(app){
-		
-    //kutsuu scenen open funktiota
+  
 		Scenes[CurrentScene].GetScene().Open(app);
     
 		app.Open();
@@ -436,7 +462,6 @@ var Lively3D = (function(Lively3D){
     }
 		app.Close();
     window.hide();
-    //kutsuu scenen close objektia
     Scenes[CurrentScene].GetScene().Close(app);
 	}
 	
@@ -523,7 +548,7 @@ var Lively3D = (function(Lively3D){
 				Lively3D.Maximize(app);
 			}
 		}
-		Lively3D.UI.ShowLoadCompleted();
+		Lively3D.LoadCompleted();
     
 	}
 	
@@ -551,6 +576,7 @@ var Lively3D = (function(Lively3D){
         
         SceneBuffer.splice(i, 1);
         found = true;
+        Lively3D.LoadCompleted();
 			}
 		}
 		if ( found == false){
@@ -616,9 +642,9 @@ var Lively3D = (function(Lively3D){
 	/**
 		Syncs dropbox-contents to local filesystem if local node.js application is running.
 	*/
-	Lively3D.Sync = function(event, parameters){
-		parameters.Lively3D.Proxies.Local.CheckAvailability(function(){
-			parameters.Lively3D.Proxies.Local.Sync();
+	Lively3D.Sync = function(event){
+		Lively3D.Proxies.Local.CheckAvailability(function(){
+			Lively3D.Proxies.Local.Sync();
 		});
 	}
 	
