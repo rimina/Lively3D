@@ -12,10 +12,7 @@ var type = "all";
 
 var flags = {
 	all:{
-		Lively3D: true, GLGE: false, docs: true, uglify: true
-	},
-	glge:{
-		GLGE: true
+		Lively3D: true, docs: true, uglify: true
 	},
 	documentation:{
 		docs: true, Lively3D: false
@@ -92,26 +89,6 @@ var listFiles = function(list, all){
 };
 
 var filearray = listFiles();
-
-
-if ( flags.GLGE ){
-	console.log("Building GLGE..");
-	
-	var cmd = spawn('node', ["build.js", "scripts", ], {cwd: "externals/GLGE/"});
-	cmd.stdout.on('data', function(data){
-		util.print(data);
-	});
-	
-	cmd.on('exit', function(code){
-		console.log("GLGE finished building!");
-		var cp = spawn('cp', ["externals/GLGE/glge-compiled-min.js", "HTML/scripts/"]);
-		cp.on('exit', function(code){
-			if (code == 0 ){
-				console.log("Copied minified GLGE to output-directory.");
-			}
-		});
-	});
-}
 
 var files = listFiles([], true);
 
