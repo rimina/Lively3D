@@ -38,7 +38,9 @@ SOFTWARE.
     loadScene : null,
     about : null,
     loadCompleted : null,
-    menu : null
+    menu : null,
+    node : null,
+    php : null
   }
   
   Lively3D.UI.create = function(scene){
@@ -63,7 +65,7 @@ SOFTWARE.
     choices.push({string : "Load Desktop", onclick: {handler : Lively3D.UI.ShowStateList}});
     choices.push({string : "Load Scene", onclick: {handler : Lively3D.UI.ShowSceneList}});
     choices.push({string : "Switch Scene", onclick: {handler : Lively3D.ChangeScene}});
-    choices.push({string : "Use Node.js", onclick: {handler : Lively3D.UI.ToggleNode}});
+    choices.push({string : "Toggle Node.js", onclick: {handler : Lively3D.UI.ToggleNode}});
     choices.push({string : "About", onclick: {handler : Lively3D.UI.ShowAbout}});
     choices.push({string : "Sync for local usage", onclick: {handler : Lively3D.Sync}});
     
@@ -152,12 +154,20 @@ SOFTWARE.
     }
     Lively3D.UI.Dialogs.about.addEventListener(WIDGET3D.EventType.onclick, onclick, Lively3D.UI.Dialogs.about);
   }
-	/**
+	
+  var choiceIndex = 5;
+  /**
 		Toggles between PHP- and Node.js proxies. Default is PHP-proxy.
 	*/
 	Lively3D.UI.ToggleNode = function(event){
 		Lively3D.UI.HTTPServers.NODE.inUse = !Lively3D.UI.HTTPServers.NODE.inUse;
 		Lively3D.UI.HTTPServers.PROXY.inUse = !Lively3D.UI.HTTPServers.PROXY.inUse;
+    if(Lively3D.UI.HTTPServers.NODE.inUse){
+      Lively3D.UI.Dialogs.menu.changeChoiceText("Toggle PHP", choiceIndex);
+    }
+    else{
+      Lively3D.UI.Dialogs.menu.changeChoiceText("Toggle Node.js",choiceIndex);
+    }
 	}
 	
 	/**
@@ -275,7 +285,6 @@ SOFTWARE.
 		}
 		else{
 			Lively3D.Proxies.Node.SaveDesktop(filename);
-		
 		}
 	}
 	
@@ -295,10 +304,7 @@ SOFTWARE.
 		}
     Lively3D.UI.Dialogs.loadState.remove();
 	};
-	
-	
-	
-	var tmpApp;
+  
 	/**
 		Shows dialog for saving desktop state. User enter state name in the dialog.
 	*/

@@ -114,6 +114,7 @@ SOFTWARE.
 		*/
 		this.Maximize = function(){
 			maximized = true;
+      Lively3D.Maximize(WindowObject);
 		}
 		
 		/**
@@ -121,6 +122,7 @@ SOFTWARE.
 		*/
 		this.Minimize = function(){
 			maximized = false;
+      Lively3D.Minimize(WindowObject);
 		}
     
     var icon;

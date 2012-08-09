@@ -282,19 +282,15 @@ var Lively3D = (function(Lively3D){
   };
   
   var titleOndblclick = function(event, livelyapp){
-    var window = livelyapp.GetWindowObject();
-    
     if(!livelyapp.isMaximized()){
-      maximize(window);
       livelyapp.Maximize();
     }
     else{
-      minimize(window);
       livelyapp.Minimize();
     }
   };
   
-  var maximize = function(window){
+  Lively3D.Maximize = function(window){
     var loc = window.getLocation();
     var d = {x : Lively3D.THREE.camera.position.x - loc.x,
       y : Lively3D.THREE.camera.position.y - loc.y,
@@ -302,14 +298,11 @@ var Lively3D = (function(Lively3D){
       
     window.d = d;
     window.setLocation(loc.x + 0.3 * d.x, loc.y + 0.3 * d.y, loc.z + 0.3 * d.z);
-    
-    console.log(window.getLocation());
   };
   
-  var minimize = function(window){
+  Lively3D.Minimize = function(window){
     var loc = window.getLocation();
     window.setLocation(loc.x - 0.3*window.d.x, loc.y - 0.3*window.d.y, loc.z - 0.3*window.d.z);
-    console.log(window.getLocation());
   };
 
   /**
@@ -457,7 +450,6 @@ var Lively3D = (function(Lively3D){
     
     var window = app.GetWindowObject();
     if(app.isMaximized()){
-      minimize(window);
       app.Minimize();
     }
 		app.Close();
@@ -545,7 +537,7 @@ var Lively3D = (function(Lively3D){
 				Lively3D.Open(app);
 			}
 			if ( app.MaximizeAfterLoad == true){
-				Lively3D.Maximize(app);
+				app.Maximize();
 			}
 		}
 		Lively3D.LoadCompleted();
@@ -562,7 +554,6 @@ var Lively3D = (function(Lively3D){
 		console.log("Loading scene..");
 		SceneBuffer.push(scene);
 		Lively3D.LoadResources(scene);
-    Lively3D.SceneLoader();
 	}
 	
 	Lively3D.SceneLoader = function(){

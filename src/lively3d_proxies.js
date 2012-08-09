@@ -67,12 +67,10 @@ SOFTWARE.
 					var app = Applications[i];
 					var maximized = app.isMaximized();
 					if ( app.isMaximized() == true ){
-						Lively3D.Minimize(app);
+						app.Minimize();
 					}
 					var AppJSON = {
 						Name: app.GetName(),
-						Location: { x: app.GetCurrentSceneObject().getLocX(), y: app.GetCurrentSceneObject().getLocY(), z: app.GetCurrentSceneObject().getLocZ()},
-						Rotation: app.GetCurrentSceneObject().getRotation(),
 						Closed: app.isClosed(),
 						Maximized: maximized,
 						Code: app.GetApplicationCode().toString(),
@@ -82,7 +80,7 @@ SOFTWARE.
 					
 					state.push(AppJSON);
 					if ( maximized == true ){
-						Lively3D.Maximize(app);
+						app.Maximize();
 					}
 				}
 			}
@@ -129,16 +127,22 @@ SOFTWARE.
 	};
 	
 	var ParseDesktopJSON = function(data){
-		var JSONArray = JSON.parse(data);
-		
+    var Applications = Lively3D.GetApplications();
+    
+    var appcount = Applications.length;
+    for (var i = 0; i < appcount; ++i ){
+      Applications[0].GetIcon().remove();
+      Applications[0].GetWindowObject().remove();
+      Applications.splice(0, 1);
+    }
+    
+		var JSONArray = JSON.parse(data);	
 		for ( var i in JSONArray ){
 			if ( JSONArray.hasOwnProperty(i)){
 				var JSONObject = JSONArray[i];
 				var CodeFunc = eval("(" + JSONObject.Code + ")");
 				var InitFunc = eval("(" + JSONObject.Init + ")");
 				var app = Lively3D.AddApplication(JSONObject.Name, CodeFunc, InitFunc);
-				SetAppLocation(app, JSONObject.Location);
-				SetAppRotation(app, JSONObject.Rotation);
 				app.StateFromDropbox = true;
 				
 				
@@ -176,8 +180,7 @@ SOFTWARE.
 		/** 
 			Fetches application list from Node.js-proxy and shows it to the user. 
 		*/
-		ShowAppList: function(){
-		
+		ShowAppList: function(){	
 			$.get("/lively3d/node/filelist/apps", function(files){
         Lively3D.UI.createAppDialog(files);
 			});
@@ -213,12 +216,10 @@ SOFTWARE.
 					var app = Applications[i];
 					var maximized = app.isMaximized();
 					if ( app.isMaximized() == true ){
-						Lively3D.Minimize(app);
+						app.Minimize();
 					}
 					var AppJSON = {
 						Name: app.GetName(),
-						Location: { x: app.GetCurrentSceneObject().getLocX(), y: app.GetCurrentSceneObject().getLocY(), z: app.GetCurrentSceneObject().getLocZ()},
-						Rotation: app.GetCurrentSceneObject().getRotation(),
 						Closed: app.isClosed(),
 						Maximized: maximized,
 						Code: app.AppCode.toString(),
@@ -228,7 +229,7 @@ SOFTWARE.
 					
 					state.applications.push(AppJSON);
 					if ( maximized == true ){
-						Lively3D.Maximize(app);
+						app.Maximize();
 					}
 				}
 			}
@@ -248,15 +249,11 @@ SOFTWARE.
 			
 			var appcount = Applications.length;
 			for (var i = 0; i < appcount; ++i ){
-				for ( var i in Lively3D.GLGE.scenes ){
-					if ( Lively3D.GLGE.scenes.hasOwnProperty(i) ){
-						Lively3D.GLGE.scenes[i].scene.removeChild(Applications[i].current);
-					}
-				}
-				
-				Applications.splice(0, 1);
+        Applications[0].GetIcon().remove();
+        Applications[0].GetWindowObject().remove();
+        Applications.splice(0, 1);
 			}
-			
+      
 			$.get("/lively3d/node/states/" + Lively3D.GetUsername() + '/' + name, function (data){
 				var apps = data.applications;
 				for ( var i in apps){
@@ -265,8 +262,6 @@ SOFTWARE.
 						var CodeFunc = eval("(" + JSONObject.Code + ")");
 						var InitFunc = eval("(" + JSONObject.Init + ")");
 						var app = Lively3D.AddApplication(JSONObject.Name, CodeFunc, InitFunc);
-						SetAppLocation(app, JSONObject.Location);
-						SetAppRotation(app, JSONObject.Rotation);
 						app.StateFromDropbox = true;
 						
 						
@@ -287,18 +282,8 @@ SOFTWARE.
 			Fetches statelist for the current username and shows it to the user.
 		*/
 		ShowStateList: function(){
-			
 			$.get("/lively3d/node/states/" + Lively3D.GetUsername(), function(files){
-				
-				var content = $('<h1>Select State</h1><div></div>');
-				var element = content.last();
-				for ( var i in files ){
-					if ( files.hasOwnProperty(i)){
-						var entry = $("<span onclick=\"Lively3D.UI.LoadDesktop('" + files[i] + "')\">" + files[i] + "</span></br>");
-						entry.appendTo(element);
-					}
-				}
-				Lively3D.UI.ShowHTML(content);
+				Lively3D.UI.createStateDialog(files);
 			});
 		},
 		/**
@@ -386,13 +371,13 @@ SOFTWARE.
 				url: "http://localhost:8000/", 
 				success: function(data){
 					if ( data.success == false ){
-						Lively3D.UI.ShowMessage(data.message);
+						alert(data.message);
 					}else{
 						callback();
 					}
 				},
 				error: function(){
-					Lively3D.UI.ShowMessage("Local Node.js application not found. Please run 'node local.js'");
+					alert("Local Node.js application not found. Please run 'node local.js'");
 				}
 			});
 		},
@@ -404,11 +389,11 @@ SOFTWARE.
 				data: {host: window.location.host, port: window.location.port, path: window.location.pathname },
 				success: function(data){
 					if ( data.success == true ){
-						Lively3D.UI.ShowMessage(data.message);
+						alert(data.message);
 					}
 				},
 				error: function(){
-					Lively3D.UI.ShowMessage("Local Node.js application not found. Please run 'node local.js' and associated Mongo-database.");
+					alert("Local Node.js application not found. Please run 'node local.js' and associated Mongo-database.");
 				}
 			});
 		},
