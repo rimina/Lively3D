@@ -22,7 +22,7 @@ SOFTWARE.
 */
 /**
 	@fileOverview Lively3D-library for WebGL.
-	@author Jari-Pekka Voutilainen
+	@author Jari-Pekka Voutilainen, Anna-Liisa Mattila
 */
 
 if (typeof(Lively3D) == 'undefined' ){
@@ -152,9 +152,6 @@ var Lively3D = (function(Lively3D){
     
     Lively3D.WIDGET.cameraGroup.container_.add(Lively3D.THREE.camera);
     Lively3D.WIDGET.cameraGroup.setZ(2800);
-    
-    //Lively3D.WIDGET.cameraGroup.setRotY(Math.PI/10.0);
-    //Lively3D.WIDGET.cameraGroup.setRotX(Math.PI/10.0);
     
     Scenes.push( new Lively3D.Scene().SetScene(DefaultScene));
     Scenes[CurrentScene].GetScene().Init();
@@ -292,17 +289,15 @@ var Lively3D = (function(Lively3D){
   
   Lively3D.Maximize = function(window){
     var loc = window.getLocation();
-    var d = {x : Lively3D.THREE.camera.position.x - loc.x,
-      y : Lively3D.THREE.camera.position.y - loc.y,
-      z : Lively3D.THREE.camera.position.z - loc.z};
+    var d = {z : Lively3D.THREE.camera.position.z - loc.z};
       
     window.d = d;
-    window.setLocation(loc.x + 0.3 * d.x, loc.y + 0.3 * d.y, loc.z + 0.3 * d.z);
+    window.setZ(loc.z + 0.3 * d.z);
   };
   
   Lively3D.Minimize = function(window){
     var loc = window.getLocation();
-    window.setLocation(loc.x - 0.3*window.d.x, loc.y - 0.3*window.d.y, loc.z - 0.3*window.d.z);
+    window.setZ(loc.z - 0.3*window.d.z);
   };
 
   /**
