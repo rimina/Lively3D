@@ -39,38 +39,12 @@ var Lively3D = (function(Lively3D){
 	var canvasDefault = "canvas";
   
   /**
-    @namespace Holds THREE.JS related variables.
-  */
-  Lively3D.THREE = {
-    /** Three.js Renderer */
-    renderer : null,
-    /** Three.js Camera */
-    camera : null
-  };
-  
-  /**
     @namespace Holds WIDGET3D related variables.
   */
   Lively3D.WIDGET = {
     mainWindow : null,
     
-    cameraGroup : null,
-    
-    addToCameraGroup : function(component){
-      if(this.cameraGroup){
-        var rot = this.cameraGroup.getRot();
-        var loc = this.cameraGroup.getLocation();
-        
-        this.cameraGroup.setLocation(0, 0, 0);
-        this.cameraGroup.setRot(0, 0, 0);
-        
-        this.cameraGroup.addChild(component);
-        
-        this.cameraGroup.setLocation(loc.x, loc.y, loc.z);
-        this.cameraGroup.setRot(rot.x, rot.y, rot.z);
-      }
-    }
-    
+    cameraGroup : null 
   };
   
 	var Scenes = [];
@@ -139,18 +113,14 @@ var Lively3D = (function(Lively3D){
 		var canvas = document.getElementById(canvasName);
     
     //creating renderer
-    Lively3D.THREE.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true, autoClear: false});
-    Lively3D.THREE.renderer.setClearColorHex( 0xf9f9f9, 1);
-    Lively3D.THREE.renderer.setSize(canvas.width, canvas.height);
+    var renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true, autoClear: false});
+    renderer.setClearColorHex( 0xf9f9f9, 1);
+    renderer.setSize(canvas.width, canvas.height);
   
     //Initialising widget library
-    Lively3D.WIDGET.mainWindow = THREEJS_WIDGET3D.init({renderer : Lively3D.THREE.renderer});
-    Lively3D.WIDGET.cameraGroup = new WIDGET3D.Window();
+    Lively3D.WIDGET.mainWindow = THREEJS_WIDGET3D.init({renderer : renderer});
+    Lively3D.WIDGET.cameraGroup = new THREEJS_WIDGET3D.CameraGroup();
     Lively3D.WIDGET.mainWindow.addChild(Lively3D.WIDGET.cameraGroup);
-    
-    Lively3D.THREE.camera = THREEJS_WIDGET3D.camera;
-    
-    Lively3D.WIDGET.cameraGroup.container_.add(Lively3D.THREE.camera);
     Lively3D.WIDGET.cameraGroup.setZ(2800);
     
     Scenes.push( new Lively3D.Scene().SetScene(DefaultScene));
@@ -219,7 +189,8 @@ var Lively3D = (function(Lively3D){
     
     display.setZ(-1800);
     
-    Lively3D.WIDGET.addToCameraGroup(display);
+    //Lively3D.WIDGET.addToCameraGroup(display);
+    Lively3D.WIDGET.cameraGroup.addChild(display);
     
     //creating a scene specific icon for the application   
     var icon = Scenes[CurrentScene].GetScene().CreateApplication(canvas);
@@ -289,15 +260,12 @@ var Lively3D = (function(Lively3D){
   
   Lively3D.Maximize = function(window){
     var loc = window.getLocation();
-    var d = {z : Lively3D.THREE.camera.position.z - loc.z};
-      
-    window.d = d;
-    window.setZ(loc.z + 0.3 * d.z);
+    window.setZ(loc.z + 600);
   };
   
   Lively3D.Minimize = function(window){
     var loc = window.getLocation();
-    window.setZ(loc.z - 0.3*window.d.z);
+    window.setZ(loc.z - 600);
   };
 
   /**
@@ -404,10 +372,7 @@ var Lively3D = (function(Lively3D){
     
     if(args.callback){
       var normalX = ((window.mousePosition_.x - (-window.width_  / 2.0)) / (window.width_ ));
-      
-      //planegeometry is represented in xz plane and it's just rotated to right position
-      //that's why in planes up is z. for other objects up is y.
-      var normalY = ((window.mousePosition_.z - (-window.height_ / 2.0)) / (window.height_));
+      var normalY = 1.0-((window.mousePosition_.y - (-window.height_ / 2.0)) / (window.height_));
       
       var canvasWidth = window.mesh_.material.map.image.width;
       var canvasHeight = window.mesh_.material.map.image.height;
@@ -760,9 +725,6 @@ SOFTWARE.
 			AppOpen = func;
 			return this;
 		}
-		
-    
-    //MUUTA S�L��
     
 		var maximized = false;
 		
@@ -1014,7 +976,7 @@ SOFTWARE.
     var username = new THREEJS_WIDGET3D.Dialog({text : "Enter Username", buttonText : "Ok", color: 0xB6C5BE, opacity : 1.0});
     
     username.setZ(-1300);
-    Lively3D.WIDGET.addToCameraGroup(username);
+    Lively3D.WIDGET.cameraGroup.addChild(username);
     
     var okButtonOnclick = function(event, parameters){
       if(parameters.dialog.textBox_.string_.length > 0){
@@ -1036,9 +998,9 @@ SOFTWARE.
     choices.push({string : "Sync for local usage", onclick: {handler : Lively3D.Sync}});
     
     Lively3D.UI.Dialogs.menu = new THREEJS_WIDGET3D.SelectDialog({width : 1300, height : 3000, choices : choices, color: 0x527F76, opacity : 0.7});
-    Lively3D.UI.Dialogs.menu.setLocation(-2750,-1000, -2900);
+    Lively3D.UI.Dialogs.menu.setLocation(-2750, 0, -2900);
     Lively3D.UI.Dialogs.menu.setRotX(-Math.PI/100.0);
-    Lively3D.WIDGET.addToCameraGroup(Lively3D.UI.Dialogs.menu);
+    Lively3D.WIDGET.cameraGroup.addChild(Lively3D.UI.Dialogs.menu);
     
     username.button_.addEventListener(WIDGET3D.EventType.onclick, okButtonOnclick,
       {dialog: username, scene : scene.GetModel() });
@@ -1082,8 +1044,8 @@ SOFTWARE.
   var createListComponent = function(choices, text){
     var dialog = new THREEJS_WIDGET3D.SelectDialog({width : 1000, height : 3200, choices : choices,
       color: 0x527F76, opacity : 0.7, text : text, hasCancel : true});
-    dialog.setLocation(0, -1600, -2400);
-    Lively3D.WIDGET.addToCameraGroup(dialog);
+    dialog.setLocation(0, 0, -2400);
+    Lively3D.WIDGET.cameraGroup.addChild(dialog);
     
     return dialog;
   }
@@ -1091,28 +1053,22 @@ SOFTWARE.
   var createLoadCompleted = function(){
     Lively3D.UI.Dialogs.loadCompleted = new WIDGET3D.Basic();
     var texture = THREE.ImageUtils.loadTexture("images/loadCompleted.png");
-    var material = new THREE.MeshBasicMaterial({ map: texture, color : 0x527F76, opacity : 1.0 });
+    var material = new THREE.MeshBasicMaterial({ map: texture, color : 0x527F76, opacity : 1.0});
     var mesh = new THREE.Mesh( new THREE.PlaneGeometry(2000, 500), material);
-    mesh.doubleSided = true;
-    mesh.flipSided = true;
-    mesh.rotation.x = Math.PI/2;
     mesh.position.set(0, 0, -2400);
     Lively3D.UI.Dialogs.loadCompleted.setMesh(mesh);
-    Lively3D.WIDGET.addToCameraGroup(Lively3D.UI.Dialogs.loadCompleted);
+    Lively3D.WIDGET.cameraGroup.addChild(Lively3D.UI.Dialogs.loadCompleted);
     Lively3D.UI.Dialogs.loadCompleted.hide();
   }
   
   var createAbout = function(){
     Lively3D.UI.Dialogs.about = new WIDGET3D.Basic();
     var texture = THREE.ImageUtils.loadTexture("images/about.png");
-    var material = new THREE.MeshBasicMaterial({ map: texture, color : 0x527F76, opacity : 1.0 });
+    var material = new THREE.MeshBasicMaterial({ map: texture, color : 0x527F76, opacity : 1.0});
     var mesh = new THREE.Mesh( new THREE.PlaneGeometry(2000, 2000), material);
-    mesh.doubleSided = true;
-    mesh.flipSided = true;
-    mesh.rotation.x = Math.PI/2;
     mesh.position.set(0, 0, -2400);
     Lively3D.UI.Dialogs.about.setMesh(mesh);
-    Lively3D.WIDGET.addToCameraGroup(Lively3D.UI.Dialogs.about);
+    Lively3D.WIDGET.cameraGroup.addChild(Lively3D.UI.Dialogs.about);
     Lively3D.UI.Dialogs.about.hide();
     
     var onclick = function(event, dialog){
@@ -1278,7 +1234,7 @@ SOFTWARE.
     var saveState = new THREEJS_WIDGET3D.Dialog({text : "State name:", buttonText : "Save", color: 0xB6C5BE, opacity: 1.0});
     saveState.button_.addEventListener(WIDGET3D.EventType.onclick, Lively3D.UI.CloseSaveDialog, saveState);
     saveState.setZ(-1300);
-    Lively3D.WIDGET.addToCameraGroup(saveState);
+    Lively3D.WIDGET.cameraGroup.addChild(saveState);
 	}
 	
 	/**

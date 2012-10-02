@@ -39,38 +39,12 @@ var Lively3D = (function(Lively3D){
 	var canvasDefault = "canvas";
   
   /**
-    @namespace Holds THREE.JS related variables.
-  */
-  Lively3D.THREE = {
-    /** Three.js Renderer */
-    renderer : null,
-    /** Three.js Camera */
-    camera : null
-  };
-  
-  /**
     @namespace Holds WIDGET3D related variables.
   */
   Lively3D.WIDGET = {
     mainWindow : null,
     
-    cameraGroup : null,
-    
-    addToCameraGroup : function(component){
-      if(this.cameraGroup){
-        var rot = this.cameraGroup.getRot();
-        var loc = this.cameraGroup.getLocation();
-        
-        this.cameraGroup.setLocation(0, 0, 0);
-        this.cameraGroup.setRot(0, 0, 0);
-        
-        this.cameraGroup.addChild(component);
-        
-        this.cameraGroup.setLocation(loc.x, loc.y, loc.z);
-        this.cameraGroup.setRot(rot.x, rot.y, rot.z);
-      }
-    }
-    
+    cameraGroup : null 
   };
   
 	var Scenes = [];
@@ -139,18 +113,14 @@ var Lively3D = (function(Lively3D){
 		var canvas = document.getElementById(canvasName);
     
     //creating renderer
-    Lively3D.THREE.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true, autoClear: false});
-    Lively3D.THREE.renderer.setClearColorHex( 0xf9f9f9, 1);
-    Lively3D.THREE.renderer.setSize(canvas.width, canvas.height);
+    var renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true, autoClear: false});
+    renderer.setClearColorHex( 0xf9f9f9, 1);
+    renderer.setSize(canvas.width, canvas.height);
   
     //Initialising widget library
-    Lively3D.WIDGET.mainWindow = THREEJS_WIDGET3D.init({renderer : Lively3D.THREE.renderer});
-    Lively3D.WIDGET.cameraGroup = new WIDGET3D.Window();
+    Lively3D.WIDGET.mainWindow = THREEJS_WIDGET3D.init({renderer : renderer});
+    Lively3D.WIDGET.cameraGroup = new THREEJS_WIDGET3D.CameraGroup();
     Lively3D.WIDGET.mainWindow.addChild(Lively3D.WIDGET.cameraGroup);
-    
-    Lively3D.THREE.camera = THREEJS_WIDGET3D.camera;
-    
-    Lively3D.WIDGET.cameraGroup.container_.add(Lively3D.THREE.camera);
     Lively3D.WIDGET.cameraGroup.setZ(2800);
     
     Scenes.push( new Lively3D.Scene().SetScene(DefaultScene));
@@ -219,7 +189,8 @@ var Lively3D = (function(Lively3D){
     
     display.setZ(-1800);
     
-    Lively3D.WIDGET.addToCameraGroup(display);
+    //Lively3D.WIDGET.addToCameraGroup(display);
+    Lively3D.WIDGET.cameraGroup.addChild(display);
     
     //creating a scene specific icon for the application   
     var icon = Scenes[CurrentScene].GetScene().CreateApplication(canvas);
@@ -289,15 +260,12 @@ var Lively3D = (function(Lively3D){
   
   Lively3D.Maximize = function(window){
     var loc = window.getLocation();
-    var d = {z : Lively3D.THREE.camera.position.z - loc.z};
-      
-    window.d = d;
-    window.setZ(loc.z + 0.3 * d.z);
+    window.setZ(loc.z + 600);
   };
   
   Lively3D.Minimize = function(window){
     var loc = window.getLocation();
-    window.setZ(loc.z - 0.3*window.d.z);
+    window.setZ(loc.z - 600);
   };
 
   /**
@@ -404,10 +372,7 @@ var Lively3D = (function(Lively3D){
     
     if(args.callback){
       var normalX = ((window.mousePosition_.x - (-window.width_  / 2.0)) / (window.width_ ));
-      
-      //planegeometry is represented in xz plane and it's just rotated to right position
-      //that's why in planes up is z. for other objects up is y.
-      var normalY = ((window.mousePosition_.z - (-window.height_ / 2.0)) / (window.height_));
+      var normalY = 1.0-((window.mousePosition_.y - (-window.height_ / 2.0)) / (window.height_));
       
       var canvasWidth = window.mesh_.material.map.image.width;
       var canvasHeight = window.mesh_.material.map.image.height;

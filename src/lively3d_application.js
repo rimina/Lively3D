@@ -94,9 +94,6 @@ SOFTWARE.
 			AppOpen = func;
 			return this;
 		}
-		
-    
-    //MUUTA SÄLÄÄ
     
 		var maximized = false;
 		

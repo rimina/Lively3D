@@ -48,7 +48,7 @@ SOFTWARE.
     var username = new THREEJS_WIDGET3D.Dialog({text : "Enter Username", buttonText : "Ok", color: 0xB6C5BE, opacity : 1.0});
     
     username.setZ(-1300);
-    Lively3D.WIDGET.addToCameraGroup(username);
+    Lively3D.WIDGET.cameraGroup.addChild(username);
     
     var okButtonOnclick = function(event, parameters){
       if(parameters.dialog.textBox_.string_.length > 0){
@@ -70,9 +70,9 @@ SOFTWARE.
     choices.push({string : "Sync for local usage", onclick: {handler : Lively3D.Sync}});
     
     Lively3D.UI.Dialogs.menu = new THREEJS_WIDGET3D.SelectDialog({width : 1300, height : 3000, choices : choices, color: 0x527F76, opacity : 0.7});
-    Lively3D.UI.Dialogs.menu.setLocation(-2750,-1000, -2900);
+    Lively3D.UI.Dialogs.menu.setLocation(-2750, 0, -2900);
     Lively3D.UI.Dialogs.menu.setRotX(-Math.PI/100.0);
-    Lively3D.WIDGET.addToCameraGroup(Lively3D.UI.Dialogs.menu);
+    Lively3D.WIDGET.cameraGroup.addChild(Lively3D.UI.Dialogs.menu);
     
     username.button_.addEventListener(WIDGET3D.EventType.onclick, okButtonOnclick,
       {dialog: username, scene : scene.GetModel() });
@@ -116,8 +116,8 @@ SOFTWARE.
   var createListComponent = function(choices, text){
     var dialog = new THREEJS_WIDGET3D.SelectDialog({width : 1000, height : 3200, choices : choices,
       color: 0x527F76, opacity : 0.7, text : text, hasCancel : true});
-    dialog.setLocation(0, -1600, -2400);
-    Lively3D.WIDGET.addToCameraGroup(dialog);
+    dialog.setLocation(0, 0, -2400);
+    Lively3D.WIDGET.cameraGroup.addChild(dialog);
     
     return dialog;
   }
@@ -125,28 +125,22 @@ SOFTWARE.
   var createLoadCompleted = function(){
     Lively3D.UI.Dialogs.loadCompleted = new WIDGET3D.Basic();
     var texture = THREE.ImageUtils.loadTexture("images/loadCompleted.png");
-    var material = new THREE.MeshBasicMaterial({ map: texture, color : 0x527F76, opacity : 1.0 });
+    var material = new THREE.MeshBasicMaterial({ map: texture, color : 0x527F76, opacity : 1.0});
     var mesh = new THREE.Mesh( new THREE.PlaneGeometry(2000, 500), material);
-    mesh.doubleSided = true;
-    mesh.flipSided = true;
-    mesh.rotation.x = Math.PI/2;
     mesh.position.set(0, 0, -2400);
     Lively3D.UI.Dialogs.loadCompleted.setMesh(mesh);
-    Lively3D.WIDGET.addToCameraGroup(Lively3D.UI.Dialogs.loadCompleted);
+    Lively3D.WIDGET.cameraGroup.addChild(Lively3D.UI.Dialogs.loadCompleted);
     Lively3D.UI.Dialogs.loadCompleted.hide();
   }
   
   var createAbout = function(){
     Lively3D.UI.Dialogs.about = new WIDGET3D.Basic();
     var texture = THREE.ImageUtils.loadTexture("images/about.png");
-    var material = new THREE.MeshBasicMaterial({ map: texture, color : 0x527F76, opacity : 1.0 });
+    var material = new THREE.MeshBasicMaterial({ map: texture, color : 0x527F76, opacity : 1.0});
     var mesh = new THREE.Mesh( new THREE.PlaneGeometry(2000, 2000), material);
-    mesh.doubleSided = true;
-    mesh.flipSided = true;
-    mesh.rotation.x = Math.PI/2;
     mesh.position.set(0, 0, -2400);
     Lively3D.UI.Dialogs.about.setMesh(mesh);
-    Lively3D.WIDGET.addToCameraGroup(Lively3D.UI.Dialogs.about);
+    Lively3D.WIDGET.cameraGroup.addChild(Lively3D.UI.Dialogs.about);
     Lively3D.UI.Dialogs.about.hide();
     
     var onclick = function(event, dialog){
@@ -312,7 +306,7 @@ SOFTWARE.
     var saveState = new THREEJS_WIDGET3D.Dialog({text : "State name:", buttonText : "Save", color: 0xB6C5BE, opacity: 1.0});
     saveState.button_.addEventListener(WIDGET3D.EventType.onclick, Lively3D.UI.CloseSaveDialog, saveState);
     saveState.setZ(-1300);
-    Lively3D.WIDGET.addToCameraGroup(saveState);
+    Lively3D.WIDGET.cameraGroup.addChild(saveState);
 	}
 	
 	/**
