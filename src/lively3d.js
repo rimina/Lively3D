@@ -371,8 +371,11 @@ var Lively3D = (function(Lively3D){
     }
     
     if(args.callback){
-      var normalX = ((window.mousePosition_.x - (-window.width_  / 2.0)) / (window.width_ ));
-      var normalY = 1.0-((window.mousePosition_.y - (-window.height_ / 2.0)) / (window.height_));
+      //var normalX = ((window.mousePosition_.x - (-window.width_  / 2.0)) / (window.width_ ));
+      //var normalY = 1.0-((window.mousePosition_.y - (-window.height_ / 2.0)) / (window.height_));
+      
+      var normalX = ((event.objectCoordinates.x - (-window.width_  / 2.0)) / (window.width_ ));
+      var normalY = 1.0-((event.objectCoordinates.y - (-window.height_ / 2.0)) / (window.height_));
       
       var canvasWidth = window.mesh_.material.map.image.width;
       var canvasHeight = window.mesh_.material.map.image.height;
