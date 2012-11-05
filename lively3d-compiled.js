@@ -63,7 +63,7 @@ var Lively3D = (function(Lively3D){
         color: 0x6A8455,
         defaultControls : true});
       
-      this.Model.setZ(200);
+      this.Model.setZ(-2000);
       Lively3D.WIDGET.mainWindow.addChild(this.Model);
     },
     
@@ -121,7 +121,7 @@ var Lively3D = (function(Lively3D){
     Lively3D.WIDGET.mainWindow = THREEJS_WIDGET3D.init({renderer : renderer});
     Lively3D.WIDGET.cameraGroup = new THREEJS_WIDGET3D.CameraGroup();
     Lively3D.WIDGET.mainWindow.addChild(Lively3D.WIDGET.cameraGroup);
-    Lively3D.WIDGET.cameraGroup.setZ(2800);
+    Lively3D.WIDGET.cameraGroup.setZ(1000);
     
     Scenes.push( new Lively3D.Scene().SetScene(DefaultScene));
     Scenes[CurrentScene].GetScene().Init();
@@ -187,11 +187,10 @@ var Lively3D = (function(Lively3D){
       material : material,
       defaultControls : true});
     
-    display.setZ(-1800);
+    display.setLocation(-2750,0,-2500);
     
     //Lively3D.WIDGET.addToCameraGroup(display);
     Lively3D.WIDGET.cameraGroup.addChild(display);
-    
     //creating a scene specific icon for the application   
     var icon = Scenes[CurrentScene].GetScene().CreateApplication(canvas);
     
@@ -403,6 +402,7 @@ var Lively3D = (function(Lively3D){
     app.GetWindowObject().show();
     app.GetWindowObject().focus();
     
+    console.log(app.GetWindowObject().getLocation());
 	}
 
 	/**
