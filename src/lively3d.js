@@ -187,10 +187,7 @@ var Lively3D = (function(Lively3D){
       material : material,
       defaultControls : true});
     
-    display.setLocation(-2750,0,-2500);
-    
-    //Lively3D.WIDGET.addToCameraGroup(display);
-    Lively3D.WIDGET.cameraGroup.addChild(display);
+    Lively3D.WIDGET.cameraGroup.addChild(display, {x: 0, y: 0, z : -2500});
     //creating a scene specific icon for the application   
     var icon = Scenes[CurrentScene].GetScene().CreateApplication(canvas);
     

@@ -187,10 +187,10 @@ var Lively3D = (function(Lively3D){
       material : material,
       defaultControls : true});
     
-    display.setLocation(-2750,0,-2500);
+    //display.setLocation(-2750,0,-2500);
     
     //Lively3D.WIDGET.addToCameraGroup(display);
-    Lively3D.WIDGET.cameraGroup.addChild(display);
+    Lively3D.WIDGET.cameraGroup.addChild(display, {x: 0, y: 0, z : -2500});
     //creating a scene specific icon for the application   
     var icon = Scenes[CurrentScene].GetScene().CreateApplication(canvas);
     
@@ -978,8 +978,7 @@ SOFTWARE.
   
     var username = new THREEJS_WIDGET3D.Dialog({text : "Enter Username", buttonText : "Ok", color: 0xB6C5BE, opacity : 1.0});
     
-    username.setZ(-1300);
-    Lively3D.WIDGET.cameraGroup.addChild(username);
+    Lively3D.WIDGET.cameraGroup.addChild(username, {x: 0, y: 0, z: -1300});
     
     var okButtonOnclick = function(event, parameters){
       if(parameters.dialog.textBox_.string_.length > 0){
@@ -1001,9 +1000,9 @@ SOFTWARE.
     choices.push({string : "Sync for local usage", onclick: {handler : Lively3D.Sync}});
     
     Lively3D.UI.Dialogs.menu = new THREEJS_WIDGET3D.SelectDialog({width : 1300, height : 3000, choices : choices, color: 0x527F76, opacity : 0.7});
-    Lively3D.UI.Dialogs.menu.setLocation(-2750, 0, -2900);
+    
+    Lively3D.WIDGET.cameraGroup.addChild(Lively3D.UI.Dialogs.menu, {x: -2750, y: 0, z: -2900});
     Lively3D.UI.Dialogs.menu.setRotX(-Math.PI/100.0);
-    Lively3D.WIDGET.cameraGroup.addChild(Lively3D.UI.Dialogs.menu);
     
     username.button_.addEventListener(WIDGET3D.EventType.onclick, okButtonOnclick,
       {dialog: username, scene : scene.GetModel() });
@@ -1047,8 +1046,7 @@ SOFTWARE.
   var createListComponent = function(choices, text){
     var dialog = new THREEJS_WIDGET3D.SelectDialog({width : 1000, height : 3200, choices : choices,
       color: 0x527F76, opacity : 0.7, text : text, hasCancel : true});
-    dialog.setLocation(0, 0, -2400);
-    Lively3D.WIDGET.cameraGroup.addChild(dialog);
+    Lively3D.WIDGET.cameraGroup.addChild(dialog, {x: 0, y: 0, z: -2400});
     
     return dialog;
   }
@@ -1058,9 +1056,9 @@ SOFTWARE.
     var texture = THREE.ImageUtils.loadTexture("images/loadCompleted.png");
     var material = new THREE.MeshBasicMaterial({ map: texture, color : 0x527F76, opacity : 1.0});
     var mesh = new THREE.Mesh( new THREE.PlaneGeometry(2000, 500), material);
-    mesh.position.set(0, 0, -2400);
+
     Lively3D.UI.Dialogs.loadCompleted.setMesh(mesh);
-    Lively3D.WIDGET.cameraGroup.addChild(Lively3D.UI.Dialogs.loadCompleted);
+    Lively3D.WIDGET.cameraGroup.addChild(Lively3D.UI.Dialogs.loadCompleted, {x: 0, y: 0, z: -2400});
     Lively3D.UI.Dialogs.loadCompleted.hide();
   }
   
@@ -1069,9 +1067,9 @@ SOFTWARE.
     var texture = THREE.ImageUtils.loadTexture("images/about.png");
     var material = new THREE.MeshBasicMaterial({ map: texture, color : 0x527F76, opacity : 1.0});
     var mesh = new THREE.Mesh( new THREE.PlaneGeometry(2000, 2000), material);
-    mesh.position.set(0, 0, -2400);
+
     Lively3D.UI.Dialogs.about.setMesh(mesh);
-    Lively3D.WIDGET.cameraGroup.addChild(Lively3D.UI.Dialogs.about);
+    Lively3D.WIDGET.cameraGroup.addChild(Lively3D.UI.Dialogs.about, {x: 0, y: 0, z: -2400});
     Lively3D.UI.Dialogs.about.hide();
     
     var onclick = function(event, dialog){
@@ -1236,8 +1234,7 @@ SOFTWARE.
 	Lively3D.UI.ShowSaveDialog = function(event){
     var saveState = new THREEJS_WIDGET3D.Dialog({text : "State name:", buttonText : "Save", color: 0xB6C5BE, opacity: 1.0});
     saveState.button_.addEventListener(WIDGET3D.EventType.onclick, Lively3D.UI.CloseSaveDialog, saveState);
-    saveState.setZ(-1300);
-    Lively3D.WIDGET.cameraGroup.addChild(saveState);
+    Lively3D.WIDGET.cameraGroup.addChild(saveState, {x: 0, y: 0, z: -1300});
 	}
 	
 	/**
