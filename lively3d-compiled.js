@@ -63,7 +63,7 @@ var Lively3D = (function(Lively3D){
         color: 0x6A8455,
         defaultControls : true});
       
-      this.Model.setZ(-2000);
+      this.Model.setZ(-1000);
       Lively3D.WIDGET.mainWindow.addChild(this.Model);
     },
     
@@ -182,15 +182,12 @@ var Lively3D = (function(Lively3D){
     
     //creating application window
     var display = new THREEJS_WIDGET3D.TitledWindow({title : name, 
-      width  : 1500,
-      height : 1500,
+      width  : 1700,
+      height : 1200,
       material : material,
       defaultControls : true});
     
-    //display.setLocation(-2750,0,-2500);
-    
-    //Lively3D.WIDGET.addToCameraGroup(display);
-    Lively3D.WIDGET.cameraGroup.addChild(display, {x: 0, y: 0, z : -2500});
+    Lively3D.WIDGET.cameraGroup.addChild(display, {x: 0, y: 0, z : -1200});
     //creating a scene specific icon for the application   
     var icon = Scenes[CurrentScene].GetScene().CreateApplication(canvas);
     
@@ -230,7 +227,6 @@ var Lively3D = (function(Lively3D){
     
     icon.addEventListener(WIDGET3D.EventType.ondblclick, iconOndblclick, livelyapp);
     display.closeButton_.addEventListener(WIDGET3D.EventType.onclick, closeDisplay, livelyapp);
-    display.title_.addEventListener(WIDGET3D.EventType.ondblclick, titleOndblclick, livelyapp);
     
     //binds applications event listeners to application window
     AddEventListeners(display, app.EventListeners, livelyapp);
@@ -246,15 +242,6 @@ var Lively3D = (function(Lively3D){
   //eventhandler for icon doubleclick.
   var iconOndblclick = function(event, livelyapp){
     Lively3D.Open(livelyapp);
-  };
-  
-  var titleOndblclick = function(event, livelyapp){
-    if(!livelyapp.isMaximized()){
-      livelyapp.Maximize();
-    }
-    else{
-      livelyapp.Minimize();
-    }
   };
   
   Lively3D.Maximize = function(window){
@@ -401,8 +388,6 @@ var Lively3D = (function(Lively3D){
 		app.Open();
     app.GetWindowObject().show();
     app.GetWindowObject().focus();
-    
-    console.log(app.GetWindowObject().getLocation());
 	}
 
 	/**
