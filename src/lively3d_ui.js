@@ -73,8 +73,7 @@ SOFTWARE.
     Lively3D.WIDGET.cameraGroup.addChild(Lively3D.UI.Dialogs.menu, {x: -2750, y: 0, z: -2900});
     Lively3D.UI.Dialogs.menu.setRotX(-Math.PI/100.0);
     
-    username.button_.addEventListener(WIDGET3D.EventType.onclick, okButtonOnclick,
-      {dialog: username, scene : scene.GetModel() });
+    username.button_.addEventListener("click", okButtonOnclick, {dialog: username, scene : scene.GetModel() });
     
     createLoadCompleted();
     createAbout();
@@ -144,7 +143,7 @@ SOFTWARE.
     var onclick = function(event, dialog){
       dialog.hide();
     }
-    Lively3D.UI.Dialogs.about.addEventListener(WIDGET3D.EventType.onclick, onclick, Lively3D.UI.Dialogs.about);
+    Lively3D.UI.Dialogs.about.addEventListener("click", onclick, Lively3D.UI.Dialogs.about);
   }
 	
   var choiceIndex = 5;
@@ -302,7 +301,7 @@ SOFTWARE.
 	*/
 	Lively3D.UI.ShowSaveDialog = function(event){
     var saveState = new THREEJS_WIDGET3D.Dialog({text : "State name:", buttonText : "Save", color: 0xB6C5BE, opacity: 1.0});
-    saveState.button_.addEventListener(WIDGET3D.EventType.onclick, Lively3D.UI.CloseSaveDialog, saveState);
+    saveState.button_.addEventListener("click", Lively3D.UI.CloseSaveDialog, saveState);
     Lively3D.WIDGET.cameraGroup.addChild(saveState, {x: 0, y: 0, z: -1300});
 	}
 	

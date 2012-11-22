@@ -218,15 +218,14 @@ var Lively3D = (function(Lively3D){
 			livelyapp.SetAppOpen(app.Open);
 		}
 		
-		
 		if ( app.Close ){
 			livelyapp.SetAppClose(app.Close);
 		}
     
 		app.SetLivelyApp(livelyapp);
     
-    icon.addEventListener(WIDGET3D.EventType.ondblclick, iconOndblclick, livelyapp);
-    display.closeButton_.addEventListener(WIDGET3D.EventType.onclick, closeDisplay, livelyapp);
+    icon.addEventListener("dblclick", iconOndblclick, livelyapp);
+    display.closeButton_.addEventListener("click", closeDisplay, livelyapp);
     
     //binds applications event listeners to application window
     AddEventListeners(display, app.EventListeners, livelyapp);
@@ -263,83 +262,20 @@ var Lively3D = (function(Lively3D){
     
     if(object && events){
       
-      var hasClick = false;
-      var hasMouseDown = false;
-      var hasMouseUp = false;
-      var hasMouseMove = false;
+      object.addEventListener("click", function(event, app){app.GetWindowObject().focus();}, app);
       
       for(var i in events){
-        AddListener(object, i, events, app);
         
-        if(i == "click"){
-          hasClick = true;
+        if(i != "keypress" && i != "keydown" && i != "keyup"){
+          object.addEventListener(i, mouseEvents, {app:app, callback: events[i.toString()]});
         }
-        else if(i == "mousedown"){
-          hasMouseDown = true;
+        else{
+          object.addEventListener(i, events[i.toString()]);
         }
-      }
-      
-      if(!hasClick && !hasMouseDown){
-        object.addEventListener(WIDGET3D.EventType.onclick, mouseEvents, {app:app, callback: false});
       }
     }
     
 	}
-  
-  /**
-		AddEventListeners calls this function for every event key found,
-    This function does the eventhandler binding to app window.
-		@param object application window object, WIDGET3D -object
-    @param event event key, string
-    @param events events -object that contains the eventhandler callback code
-	*/
-  var AddListener = function(object, event, events, app){
-    switch(event){
-      case "click":
-        object.addEventListener(WIDGET3D.EventType.onclick, mouseEvents, {app:app, callback: events.click});
-        return true;
-        
-      case "dblclick":
-        object.addEventListener(WIDGET3D.EventType.ondblclick, mouseEvents, {app:app, callback: events.dblclick});
-        return true;
-        
-      case "mousemove":
-        object.addEventListener(WIDGET3D.EventType.onmousemove, mouseEvents, {app:app, callback: events.mousemove});
-        return true;
-        
-      case "mousedown":
-        object.addEventListener(WIDGET3D.EventType.onmousedown, mouseEvents, {app:app, callback: events.mousedown});
-        return true;
-      
-      case "mouseup":
-        object.addEventListener(WIDGET3D.EventType.onmouseup, mouseEvents, {app:app, callback: events.mouseup});
-        return true;
-        
-      case "mouseover":
-        object.addEventListener(WIDGET3D.EventType.onmouseover, mouseEvents, {app:app, callback: events.mouseover});
-        return true;
-        
-      case "mouseout":
-        object.addEventListener(WIDGET3D.EventType.onmouseout, mouseEvents, {app:app, callback: events.mouseout});
-        return true;
-        
-      case "keypress":
-        object.addEventListener(WIDGET3D.EventType.onkeypress, events.keypress);
-        return true;
-        
-      case "keydown":
-        object.addEventListener(WIDGET3D.EventType.onkeydown, events.keydown);
-        return true;
-        
-      case "keyup":
-        object.addEventListener(WIDGET3D.EventType.onkeyup, events.keyup);
-        return true;
-        
-      default:
-        console.log("default: " + event);
-        return false;
-    }
-  };
   
   /**
     Calculates coordinate translations from screen coordinates to
@@ -352,14 +288,7 @@ var Lively3D = (function(Lively3D){
   
     var window = args.app.GetWindowObject();
     
-    if(event.type == "click" || event.type == "mousedown"){
-      window.focus();
-    }
-    
-    if(args.callback){
-      //var normalX = ((window.mousePosition_.x - (-window.width_  / 2.0)) / (window.width_ ));
-      //var normalY = 1.0-((window.mousePosition_.y - (-window.height_ / 2.0)) / (window.height_));
-      
+    if(args.callback){      
       var normalX = ((event.objectCoordinates.x - (-window.width_  / 2.0)) / (window.width_ ));
       var normalY = 1.0-((event.objectCoordinates.y - (-window.height_ / 2.0)) / (window.height_));
       
@@ -564,7 +493,7 @@ var Lively3D = (function(Lively3D){
     
 		for ( var i in Applications){
       var icon = Scenes[CurrentScene].GetScene().CreateApplication(Applications[i].GetWindowObject().mesh_.material.map.image);
-      icon.addEventListener(WIDGET3D.EventType.ondblclick, iconOndblclick, Applications[i]);
+      icon.addEventListener("dblclick", iconOndblclick, Applications[i]);
       Applications[i].SetIcon(icon);
 		}
 		
