@@ -1,6 +1,6 @@
 ### Lively3D
 
-Lively3D is three dimensional windowing environment, which was originaly developed to study the limits of modern web technologies. The original version of [Lively3D] (https://github.com/Zharktas/Lively3D) is based on GLGE, by Paul Brunt, WebGL-library which abstract WebGL implementation details from developer. This version uses mr-doobs [three.js] (http://github.com/mrdoob/three.js) (r51) as an 3D-engine and [widget3D] (http://github.com/rimina/widget3D) widget library.
+[Lively3D](http://lively3d.cs.tut.fi/dev/) is three dimensional windowing environment, which was originaly developed to study the limits of modern web technologies. The original version of [Lively3D] (https://github.com/Zharktas/Lively3D) is based on GLGE, by Paul Brunt, WebGL-library which abstract WebGL implementation details from developer. This version uses mr-doobs [three.js] (http://github.com/mrdoob/three.js) (r53) as an 3D-engine and [widget3D] (http://github.com/rimina/widget3D) widget library.
 
 The features of Lively3D include canvas-application embedding, redefinement of 3D-scene, persistance and deployment in Dropbox.
 
