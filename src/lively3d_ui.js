@@ -45,13 +45,13 @@ SOFTWARE.
   
   Lively3D.UI.create = function(scene){
   
-    var username = new THREEJS_WIDGET3D.Dialog({text : "Enter Username", buttonText : "Ok", color: 0xB6C5BE, opacity : 1.0});
+    var username = new WIDGET3D.Dialog({text : "Enter Username", buttonText : "Ok", color: 0xB6C5BE, opacity : 1.0});
     
     Lively3D.WIDGET.cameraGroup.addChild(username, {x: 0, y: 0, z: -1300});
     
     var okButtonOnclick = function(event, parameters){
-      if(parameters.dialog.textBox_.string_.length > 0){
-        Lively3D.SetUsername(parameters.dialog.textBox_.string_);
+      if(parameters.dialog.textBox_.text_.length > 0){
+        Lively3D.SetUsername(parameters.dialog.textBox_.text_);
         parameters.dialog.remove();
         parameters.scene.show();
         Lively3D.UI.Dialogs.menu.show();
@@ -68,7 +68,7 @@ SOFTWARE.
     choices.push({string : "About", onclick: {handler : Lively3D.UI.ShowAbout}});
     choices.push({string : "Sync for local usage", onclick: {handler : Lively3D.Sync}});
     
-    Lively3D.UI.Dialogs.menu = new THREEJS_WIDGET3D.SelectDialog({width : 1300, height : 3000, choices : choices, color: 0x527F76, opacity : 0.7});
+    Lively3D.UI.Dialogs.menu = new WIDGET3D.SelectDialog({width : 1300, height : 3000, choices : choices, color: 0x527F76, opacity : 0.7});
     
     Lively3D.WIDGET.cameraGroup.addChild(Lively3D.UI.Dialogs.menu, {x: -2750, y: 0, z: -2900});
     Lively3D.UI.Dialogs.menu.setRotX(-Math.PI/100.0);
@@ -112,7 +112,18 @@ SOFTWARE.
   };
   
   var createListComponent = function(choices, text){
-    var dialog = new THREEJS_WIDGET3D.SelectDialog({width : 1000, height : 3200, choices : choices,
+    
+    if(choices.length == 1){
+      height = 3200/3;
+    }
+    else if(choices.length < 5){
+      var height = (3200/7)*choices.length;
+    }
+    else{
+      var height = (3200/12)*choices.length;
+    }
+  
+    var dialog = new WIDGET3D.SelectDialog({width : 1000, height : height, choices : choices,
       color: 0x527F76, opacity : 0.7, text : text, hasCancel : true});
     Lively3D.WIDGET.cameraGroup.addChild(dialog, {x: 0, y: 0, z: -2400});
     
@@ -300,7 +311,7 @@ SOFTWARE.
 		Shows dialog for saving desktop state. User enter state name in the dialog.
 	*/
 	Lively3D.UI.ShowSaveDialog = function(event){
-    var saveState = new THREEJS_WIDGET3D.Dialog({text : "State name:", buttonText : "Save", color: 0xB6C5BE, opacity: 1.0});
+    var saveState = new WIDGET3D.Dialog({text : "State name:", buttonText : "Save", color: 0xB6C5BE, opacity: 1.0});
     saveState.button_.addEventListener("click", Lively3D.UI.CloseSaveDialog, saveState);
     Lively3D.WIDGET.cameraGroup.addChild(saveState, {x: 0, y: 0, z: -1300});
 	}
@@ -309,8 +320,8 @@ SOFTWARE.
 		Closes save dialog. If statename field contains string, Desktopstate is saved.
 	*/
 	Lively3D.UI.CloseSaveDialog = function(event, dialog){ 
-    if(dialog.textBox_.string_.length > 0){
-      Lively3D.UI.SaveDesktop(dialog.textBox_.string_);
+    if(dialog.textBox_.text_.length > 0){
+      Lively3D.UI.SaveDesktop(dialog.textBox_.text_);
       dialog.remove();
     }
 	}

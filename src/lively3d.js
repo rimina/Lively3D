@@ -37,13 +37,13 @@ var Lively3D = (function(Lively3D){
 	
 	var canvasName = "";
 	var canvasDefault = "canvas";
+  this.renderer;
   
   /**
     @namespace Holds WIDGET3D related variables.
   */
   Lively3D.WIDGET = {
     mainWindow : null,
-    
     cameraGroup : null 
   };
   
@@ -58,19 +58,21 @@ var Lively3D = (function(Lively3D){
     //creates the object related to scene and
     //initializes it to be ready for use
     Init: function(){
-      this.Model = new THREEJS_WIDGET3D.GridWindow({width: 2000,
+      this.Model = new WIDGET3D.GridWindow({width: 2000,
         height: 2000,
-        color: 0x6A8455,
+        color: 0x003300,
         defaultControls : true});
       
       this.Model.setZ(-1000);
       Lively3D.WIDGET.mainWindow.addChild(this.Model);
+      
+      Lively3D.renderer.setClearColorHex( 0xDBE6E0, 1);
     },
     
     //creates a scene specific icon for the application
     CreateApplication: function(appCanvas){
     
-      var icon = new THREEJS_WIDGET3D.GridIcon({picture : "../images/app.png",
+      var icon = new WIDGET3D.GridIcon({picture : "../images/app.png",
         color : 0x00EE55,
         parent : this.Model});
       
@@ -113,13 +115,11 @@ var Lively3D = (function(Lively3D){
 		var canvas = document.getElementById(canvasName);
     
     //creating renderer
-    var renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true, autoClear: false});
-    renderer.setClearColorHex( 0xf9f9f9, 1);
-    renderer.setSize(canvas.width, canvas.height);
+    Lively3D.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true, autoClear: false});
   
     //Initialising widget library
-    Lively3D.WIDGET.mainWindow = THREEJS_WIDGET3D.init({renderer : renderer});
-    Lively3D.WIDGET.cameraGroup = new THREEJS_WIDGET3D.CameraGroup();
+    Lively3D.WIDGET.mainWindow = WIDGET3D.createMainWindow_THREE({renderer : Lively3D.renderer});
+    Lively3D.WIDGET.cameraGroup = new WIDGET3D.CameraGroup();
     Lively3D.WIDGET.mainWindow.addChild(Lively3D.WIDGET.cameraGroup);
     Lively3D.WIDGET.cameraGroup.setZ(1000);
     
@@ -134,7 +134,7 @@ var Lively3D = (function(Lively3D){
     var now;
 
     function animLoop(){
-      requestAnimFrame(animLoop, canvas);
+      requestAnimationFrame(animLoop, canvas);
       now=parseInt(new Date().getTime());
       
       //Updates scene
@@ -148,7 +148,7 @@ var Lively3D = (function(Lively3D){
         }
       }
       //the rendering function
-      THREEJS_WIDGET3D.render()
+      WIDGET3D.render()
       lasttime=now;
       
     }
@@ -181,7 +181,7 @@ var Lively3D = (function(Lively3D){
     tex.needsUpdate = true;
     
     //creating application window
-    var display = new THREEJS_WIDGET3D.TitledWindow({title : name, 
+    var display = new WIDGET3D.TitledWindow({title : name, 
       width  : 1700,
       height : 1200,
       material : material,
@@ -494,6 +494,7 @@ var Lively3D = (function(Lively3D){
 		for ( var i in Applications){
       var icon = Scenes[CurrentScene].GetScene().CreateApplication(Applications[i].GetWindowObject().mesh_.material.map.image);
       icon.addEventListener("dblclick", iconOndblclick, Applications[i]);
+      
       Applications[i].SetIcon(icon);
 		}
 		
