@@ -65,23 +65,16 @@ SOFTWARE.
 			for ( var i in Applications ){
 				if ( Applications.hasOwnProperty(i)){
 					var app = Applications[i];
-					var maximized = app.isMaximized();
-					if ( app.isMaximized() == true ){
-						app.Minimize();
-					}
+
 					var AppJSON = {
 						Name: app.GetName(),
 						Closed: app.isClosed(),
-						Maximized: maximized,
 						Code: app.GetApplicationCode().toString(),
 						Init: app.GetInitializationCode().toString(),
 						AppState: app.Save()
 					}
 					
 					state.push(AppJSON);
-					if ( maximized == true ){
-						app.Maximize();
-					}
 				}
 			}
 			LivelyState = JSON.stringify(state);
@@ -150,28 +143,11 @@ SOFTWARE.
 					app.OpenAfterLoad = true;
 				}
 				
-				if ( JSONObject.Maximized == true ){
-					app.MaximizeAfterLoad = true;
-				}
-				
 				app.Load(JSONObject.AppState);
 				app.StartApp();
 			}
 		}
 	};
-	
-	var SetAppLocation = function(App, location){
-		App.GetSceneObject(0).setLocX(location.x);
-		App.GetSceneObject(0).setLocY(location.y);
-		App.GetSceneObject(0).setLocZ(location.z);
-	};
-	
-	var SetAppRotation = function(App, rotation){
-		App.GetSceneObject(0).setRotX(rotation.x);
-		App.GetSceneObject(0).setRotY(rotation.y);
-		App.GetSceneObject(0).setRotZ(rotation.z);
-	};
-	
 	
 	/**
 		@namespace Implementation for Node.js-proxy.
@@ -214,23 +190,16 @@ SOFTWARE.
 			for ( var i in Applications ){
 				if ( Applications.hasOwnProperty(i)){
 					var app = Applications[i];
-					var maximized = app.isMaximized();
-					if ( app.isMaximized() == true ){
-						app.Minimize();
-					}
+
 					var AppJSON = {
 						Name: app.GetName(),
 						Closed: app.isClosed(),
-						Maximized: maximized,
 						Code: app.AppCode.toString(),
 						Init: app.AppInit.toString(),
 						AppState: app.Save()
 					}
 					
 					state.applications.push(AppJSON);
-					if ( maximized == true ){
-						app.Maximize();
-					}
 				}
 			}
 			
@@ -269,9 +238,6 @@ SOFTWARE.
 							app.OpenAfterLoad = true;
 						}
 						
-						if ( JSONObject.Maximized == 'true' ){
-							app.MaximizeAfterLoad = true;
-						}
 						app.Load(JSONObject.AppState);
 						app.StartApp();
 					}

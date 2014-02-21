@@ -20,6 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
+
+
+//TODO REFACTOR TO NEWEST VERSION!!!
+
 (function(Lively3D){
   
 	/**
@@ -44,7 +48,8 @@ SOFTWARE.
   }
   
   Lively3D.UI.create = function(scene){
-  
+    
+    //MITEN TÄMÄ MENIKÄÄN?
     var username = new WIDGET3D.Dialog({text : "Enter Username", buttonText : "Ok", color: 0xB6C5BE, opacity : 1.0});
     
     Lively3D.WIDGET.cameraGroup.addChild(username, {x: 0, y: 0, z: -1300});
@@ -71,7 +76,7 @@ SOFTWARE.
     Lively3D.UI.Dialogs.menu = new WIDGET3D.SelectDialog({width : 1300, height : 3000, choices : choices, color: 0x527F76, opacity : 0.7});
     
     Lively3D.WIDGET.cameraGroup.addChild(Lively3D.UI.Dialogs.menu, {x: -2750, y: 0, z: -2900});
-    Lively3D.UI.Dialogs.menu.setRotX(-Math.PI/100.0);
+    Lively3D.UI.Dialogs.menu.setRotationX(-Math.PI/100.0);
     
     username.button_.addEventListener("click", okButtonOnclick, {dialog: username, scene : scene.GetModel() });
     

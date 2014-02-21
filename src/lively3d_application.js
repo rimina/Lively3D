@@ -95,33 +95,6 @@ SOFTWARE.
 			return this;
 		}
     
-		var maximized = false;
-		
-		/**
-			Is application maximized or minimized. Default minimized.
-			@returns {boolean} True if application is maximized, otherwise false.
-			
-		*/
-		this.isMaximized = function(){
-			return maximized;
-		}
-		
-		/**
-			Maximizes application.
-		*/
-		this.Maximize = function(){
-			maximized = true;
-      Lively3D.Maximize(WindowObject);
-		}
-		
-		/**
-			Minimizes application
-		*/
-		this.Minimize = function(){
-			maximized = false;
-      Lively3D.Minimize(WindowObject);
-		}
-    
     var icon;
     
     this.SetIcon = function(obj){

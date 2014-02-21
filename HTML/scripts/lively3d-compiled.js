@@ -191,11 +191,11 @@ var Lively3D = (function(Lively3D){
     //creating a scene specific icon for the application   
     var icon = Scenes[CurrentScene].GetScene().CreateApplication(canvas);
     
-    
     //updatefunction for application window
     var updateDisplay = function(display){
-      if(display.mesh_.material.map){
-        display.mesh_.material.map.needsUpdate = true;
+      content = display.getContent();
+      if(content.mesh_.material.map){
+        content.mesh_.material.map.needsUpdate = true;
       }
     };
     display.addUpdateCallback(updateDisplay, display);
@@ -242,16 +242,6 @@ var Lively3D = (function(Lively3D){
   var iconOndblclick = function(event, livelyapp){
     Lively3D.Open(livelyapp);
   };
-  
-  Lively3D.Maximize = function(window){
-    var loc = window.getLocation();
-    window.setZ(loc.z + 600);
-  };
-  
-  Lively3D.Minimize = function(window){
-    var loc = window.getLocation();
-    window.setZ(loc.z - 600);
-  };
 
   /**
 		Binds application eventlisteners to application window.
@@ -259,7 +249,7 @@ var Lively3D = (function(Lively3D){
     @param events events -object that contains the eventhandler callback code
 	*/
 	var AddEventListeners = function(object, events, app){
-    
+    var content = object.getContent();
     if(object && events){
       
       object.addEventListener("click", function(event, app){app.GetWindowObject().focus();}, app);
@@ -267,9 +257,10 @@ var Lively3D = (function(Lively3D){
       for(var i in events){
         
         if(i != "keypress" && i != "keydown" && i != "keyup"){
-          object.addEventListener(i, mouseEvents, {app:app, callback: events[i.toString()]});
+          content.addEventListener(i, mouseEvents, {app:app, callback: events[i.toString()]});
         }
         else{
+          //these should not be bound to window content
           object.addEventListener(i, events[i.toString()]);
         }
       }
@@ -287,20 +278,21 @@ var Lively3D = (function(Lively3D){
   var mouseEvents = function(event, args){
   
     var window = args.app.GetWindowObject();
+    var content = window.getContent();
     
     if(args.callback){      
       var normalX = ((event.objectCoordinates.x - (-window.width_  / 2.0)) / (window.width_ ));
       var normalY = 1.0-((event.objectCoordinates.y - (-window.height_ / 2.0)) / (window.height_));
       
-      var canvasWidth = window.mesh_.material.map.image.width;
-      var canvasHeight = window.mesh_.material.map.image.height;
+      var canvasWidth = content.mesh_.material.map.image.width;
+      var canvasHeight = content.mesh_.material.map.image.height;
       
       var x = normalX * canvasWidth;
       var y = normalY * canvasHeight;
       
       var coords = [x, y];
       
-      var param = {"coord": coords, "canvas": window.mesh_.material.map.image, "event": event};
+      var param = {"coord": coords, "canvas": content.mesh_.material.map.image, "event": event};
       
       args.callback(param);
     }
@@ -326,9 +318,7 @@ var Lively3D = (function(Lively3D){
 	Lively3D.Close = function(app){
     
     var window = app.GetWindowObject();
-    if(app.isMaximized()){
-      app.Minimize();
-    }
+
 		app.Close();
     window.hide();
     Scenes[CurrentScene].GetScene().Close(app);
@@ -413,12 +403,8 @@ var Lively3D = (function(Lively3D){
 			if ( app.OpenAfterLoad == true){
 				Lively3D.Open(app);
 			}
-			if ( app.MaximizeAfterLoad == true){
-				app.Maximize();
-			}
 		}
 		Lively3D.LoadCompleted();
-    
 	}
 	
 	var SceneBuffer = [];
@@ -492,7 +478,7 @@ var Lively3D = (function(Lively3D){
     Scenes[CurrentScene].SetModel(Scenes[CurrentScene].GetScene().Model);
     
 		for ( var i in Applications){
-      var icon = Scenes[CurrentScene].GetScene().CreateApplication(Applications[i].GetWindowObject().mesh_.material.map.image);
+      var icon = Scenes[CurrentScene].GetScene().CreateApplication(Applications[i].GetWindowObject().getContent().mesh_.material.map.image);
       icon.addEventListener("dblclick", iconOndblclick, Applications[i]);
       
       Applications[i].SetIcon(icon);
@@ -642,33 +628,6 @@ SOFTWARE.
 		this.SetAppOpen = function(func){
 			AppOpen = func;
 			return this;
-		}
-    
-		var maximized = false;
-		
-		/**
-			Is application maximized or minimized. Default minimized.
-			@returns {boolean} True if application is maximized, otherwise false.
-			
-		*/
-		this.isMaximized = function(){
-			return maximized;
-		}
-		
-		/**
-			Maximizes application.
-		*/
-		this.Maximize = function(){
-			maximized = true;
-      Lively3D.Maximize(WindowObject);
-		}
-		
-		/**
-			Minimizes application
-		*/
-		this.Minimize = function(){
-			maximized = false;
-      Lively3D.Minimize(WindowObject);
 		}
     
     var icon;
@@ -917,7 +876,7 @@ SOFTWARE.
     Lively3D.UI.Dialogs.menu = new WIDGET3D.SelectDialog({width : 1300, height : 3000, choices : choices, color: 0x527F76, opacity : 0.7});
     
     Lively3D.WIDGET.cameraGroup.addChild(Lively3D.UI.Dialogs.menu, {x: -2750, y: 0, z: -2900});
-    Lively3D.UI.Dialogs.menu.setRotX(-Math.PI/100.0);
+    Lively3D.UI.Dialogs.menu.setRotationX(-Math.PI/100.0);
     
     username.button_.addEventListener("click", okButtonOnclick, {dialog: username, scene : scene.GetModel() });
     
@@ -1246,23 +1205,16 @@ SOFTWARE.
 			for ( var i in Applications ){
 				if ( Applications.hasOwnProperty(i)){
 					var app = Applications[i];
-					var maximized = app.isMaximized();
-					if ( app.isMaximized() == true ){
-						app.Minimize();
-					}
+
 					var AppJSON = {
 						Name: app.GetName(),
 						Closed: app.isClosed(),
-						Maximized: maximized,
 						Code: app.GetApplicationCode().toString(),
 						Init: app.GetInitializationCode().toString(),
 						AppState: app.Save()
 					}
 					
 					state.push(AppJSON);
-					if ( maximized == true ){
-						app.Maximize();
-					}
 				}
 			}
 			LivelyState = JSON.stringify(state);
@@ -1331,28 +1283,11 @@ SOFTWARE.
 					app.OpenAfterLoad = true;
 				}
 				
-				if ( JSONObject.Maximized == true ){
-					app.MaximizeAfterLoad = true;
-				}
-				
 				app.Load(JSONObject.AppState);
 				app.StartApp();
 			}
 		}
 	};
-	
-	var SetAppLocation = function(App, location){
-		App.GetSceneObject(0).setLocX(location.x);
-		App.GetSceneObject(0).setLocY(location.y);
-		App.GetSceneObject(0).setLocZ(location.z);
-	};
-	
-	var SetAppRotation = function(App, rotation){
-		App.GetSceneObject(0).setRotX(rotation.x);
-		App.GetSceneObject(0).setRotY(rotation.y);
-		App.GetSceneObject(0).setRotZ(rotation.z);
-	};
-	
 	
 	/**
 		@namespace Implementation for Node.js-proxy.
@@ -1395,23 +1330,16 @@ SOFTWARE.
 			for ( var i in Applications ){
 				if ( Applications.hasOwnProperty(i)){
 					var app = Applications[i];
-					var maximized = app.isMaximized();
-					if ( app.isMaximized() == true ){
-						app.Minimize();
-					}
+
 					var AppJSON = {
 						Name: app.GetName(),
 						Closed: app.isClosed(),
-						Maximized: maximized,
 						Code: app.AppCode.toString(),
 						Init: app.AppInit.toString(),
 						AppState: app.Save()
 					}
 					
 					state.applications.push(AppJSON);
-					if ( maximized == true ){
-						app.Maximize();
-					}
 				}
 			}
 			
@@ -1450,9 +1378,6 @@ SOFTWARE.
 							app.OpenAfterLoad = true;
 						}
 						
-						if ( JSONObject.Maximized == 'true' ){
-							app.MaximizeAfterLoad = true;
-						}
 						app.Load(JSONObject.AppState);
 						app.StartApp();
 					}
