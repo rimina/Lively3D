@@ -58,23 +58,29 @@ var Lively3D = (function(Lively3D){
     //creates the object related to scene and
     //initializes it to be ready for use
     Init: function(){
-      this.Model = new WIDGET3D.GridWindow({width: 2000,
-        height: 2000,
+      this.Model = new WIDGET3D.GridWindow({
+        width: 200,
+        height: 200,
         color: 0x003300,
-        defaultControls : true});
+        defaultControls : true
+      });
       
-      this.Model.setZ(-1000);
+      this.Model.setPositionZ(-1000);
       Lively3D.WIDGET.mainWindow.add(this.Model);
       
-      Lively3D.renderer.setClearColorHex( 0xDBE6E0, 1);
+      Lively3D.renderer.setClearColor(0xF0F0F0);
+      
+      new WIDGET3D.FlyControl(Lively3D.WIDGET.cameraGroup);
     },
     
     //creates a scene specific icon for the application
     CreateApplication: function(appCanvas){
     
-      var icon = new WIDGET3D.GridIcon({picture : "../images/app.png",
+      var icon = new WIDGET3D.GridIcon({
+        picture : "../images/app.png",
         color : 0x00EE55,
-        parent : this.Model});
+        parent : this.Model
+      });
       
       return icon;
     },
@@ -115,20 +121,13 @@ var Lively3D = (function(Lively3D){
 		var canvas = document.getElementById(canvasName);
     
     //creating renderer
-    Lively3D.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true, autoClear: false});
-  
-    //Initialising widget library
-    //Lively3D.WIDGET.mainWindow = WIDGET3D.createMainWindow_THREE({renderer : Lively3D.renderer});
+    Lively3D.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true});
     
     Lively3D.WIDGET.mainWindow = WIDGET3D.THREE_Application({renderer : Lively3D.renderer});
     
-    //Lively3D.WIDGET.cameraGroup = new WIDGET3D.CameraGroup();
-    //Lively3D.WIDGET.mainWindow.add(Lively3D.WIDGET.cameraGroup);
-    
     Lively3D.WIDGET.cameraGroup = WIDGET3D.getCameraGroup();
-    Lively3D.WIDGET.cameraGroup.setZ(1000);
     
-    Scenes.push( new Lively3D.Scene().SetScene(DefaultScene));
+    Scenes.push(new Lively3D.Scene().SetScene(DefaultScene));
     Scenes[CurrentScene].GetScene().Init();
     Scenes[CurrentScene].SetModel(Scenes[CurrentScene].GetScene().Model);
     
@@ -148,19 +147,26 @@ var Lively3D = (function(Lively3D){
       //Updates applications texture (canvas)
       for(var i = 0; i < Applications.length; ++i){
         var window = Applications[i].GetWindowObject();
-        if(window.isVisible_){
+        if(window.isVisible){
           window.update();
         }
       }
       //the rendering function
-      WIDGET3D.render()
+      WIDGET3D.render();
       lasttime=now;
       
     }
 
     animLoop();
-	}
+	};
 	
+  //eventhandler for icon doubleclick.
+  var createIconOndblclick = function(livelyapp){
+    return function(event){
+      Lively3D.Open(livelyapp);
+    };
+  };
+  
 	/**
 		Adds new canvas-application to the Lively3D-environment.
 		@param name Name of the application.
@@ -186,13 +192,18 @@ var Lively3D = (function(Lively3D){
     tex.needsUpdate = true;
     
     //creating application window
-    var display = new WIDGET3D.TitledWindow({title : name, 
+    var display = new WIDGET3D.TitledWindow({
+      title : name, 
       width  : 1700,
       height : 1200,
       material : material,
-      defaultControls : true});
+      defaultControls : true,
+      override : true
+    });
     
-    Lively3D.WIDGET.cameraGroup.add(display, {x: 0, y: 0, z : -1200});
+    display.setPosition(0, 0, -1200);
+    Lively3D.WIDGET.cameraGroup.add(display);
+    
     //creating a scene specific icon for the application   
     var icon = Scenes[CurrentScene].GetScene().CreateApplication(canvas);
     
@@ -200,8 +211,8 @@ var Lively3D = (function(Lively3D){
     var createUpdateCallback = function(display){
       return function(){
         content = display.getContent();
-        if(content.mesh_.material.map){
-          content.mesh_.material.map.needsUpdate = true;
+        if(content.mesh.material.map){
+          content.mesh.material.map.needsUpdate = true;
         }
       }
     };
@@ -231,26 +242,50 @@ var Lively3D = (function(Lively3D){
     
 		app.SetLivelyApp(livelyapp);
     
+    
+    //eventhandler for windows close button
+    var createCloseDisplay = function(livelyapp){
+      return function(event){
+        Lively3D.Close(livelyapp);
+      }
+    };
+    
     icon.addEventListener("dblclick", createIconOndblclick(livelyapp));
-    display.closeButton_.addEventListener("click", createCloseDisplay(livelyapp));
+    display.closeButton.addEventListener("click", createCloseDisplay(livelyapp));
     
     //binds applications event listeners to application window
     AddEventListeners(display, app.EventListeners, livelyapp);
     
 		return livelyapp;
-	}
+	};
   
-  //eventhandler for windows close button
-  var createCloseDisplay = function(livelyapp){
-    return function(event){
-      Lively3D.Close(livelyapp);
-    }
-  };
+  /**
+  Calculates coordinate translations from screen coordinates to
+  application coordinates and calls applications event handler for the event
   
-  //eventhandler for icon doubleclick.
-  var createIconOndblclick = function(livelyapp){
-    return function(event){
-      Lively3D.Open(livelyapp);
+  @param event DOM event object
+  @param args object that contain application and it's callbackfunction
+  */
+  var mouseEvents = function(parameters, event){
+    var window = parameters.app.GetWindowObject();
+    var content = window.getContent();
+    
+    if(parameters.callback){
+      //TODO: tarkasta tämä
+      var normalX = ((event.objectCoordinates.x - (-window.width  / 2.0)) / (window.width ));
+      var normalY = 1.0-((event.objectCoordinates.y - (-window.height / 2.0)) / (window.height));
+      
+      var canvasWidth = content.mesh.material.map.image.width;
+      var canvasHeight = content.mesh.material.map.image.height;
+      
+      var x = normalX * canvasWidth;
+      var y = normalY * canvasHeight;
+      
+      var coords = [x, y];
+      
+      var param = {"coord": coords, "canvas": content.mesh_.material.map.image, "event": event};
+      
+      parameters.callback(param);
     }
   };
 
@@ -260,56 +295,28 @@ var Lively3D = (function(Lively3D){
     @param events events -object that contains the eventhandler callback code
 	*/
 	var AddEventListeners = function(object, events, app){
-    var content = object.getContent();
-    if(object && events){
-      
-      var focus = function(app){
-        return function(event){
-          app.GetWindowObject().focus();
-        }
-      };
-      
-      //object.addEventListener("click", function(event, app){app.GetWindowObject().focus();}, app);
-      object.addEventListener("click", focus(app));
-      
-      /**
-    Calculates coordinate translations from screen coordinates to
-    application coordinates and calls applications event handler for the event
-    
-    @param event DOM event object
-    @param args object that contain application and it's callbackfunction
-    */
-    var mouseEvents = function(args){
+  
+    var createMouseHandler = function(parameters){
       return function(event){
-        var window = args.app.GetWindowObject();
-        var content = window.getContent();
-        
-        if(args.callback){
-          //TODO: tarkasta tämä
-          var normalX = ((event.objectCoordinates.x - (-window.width_  / 2.0)) / (window.width_ ));
-          var normalY = 1.0-((event.objectCoordinates.y - (-window.height_ / 2.0)) / (window.height_));
-          
-          var canvasWidth = content.mesh_.material.map.image.width;
-          var canvasHeight = content.mesh_.material.map.image.height;
-          
-          var x = normalX * canvasWidth;
-          var y = normalY * canvasHeight;
-          
-          var coords = [x, y];
-          
-          var param = {"coord": coords, "canvas": content.mesh_.material.map.image, "event": event};
-          
-          args.callback(param);
-        }
+        mouseEvents(parameters, event);
+      };
+    };
+    
+    var focus = function(app){
+      return function(event){
+        app.GetWindowObject().focus();
       }
     };
-      
+    
+    var content = object.getContent();
+    if(object && events){
+    
+      object.addEventListener("click", focus(app));
       
       for(var i in events){
         
         if(i != "keypress" && i != "keydown" && i != "keyup"){
-          //content.addEventListener(i, mouseEvents, {app:app, callback: events[i.toString()]});
-          content.addEventListener(i, mouseEvents({app:app, callback: events[i.toString()]}));
+          content.addEventListener(i, createMouseHandler({app:app, callback: events[i.toString()]}));
         }
         else{
           //these should not be bound to window content
@@ -317,8 +324,7 @@ var Lively3D = (function(Lively3D){
         }
       }
     }
-    
-	}
+	};
 	
 	/**
 		Opens given Lively3D Application in every 3D-scene.
@@ -344,7 +350,7 @@ var Lively3D = (function(Lively3D){
 		app.Close();
     window.hide();
     Scenes[CurrentScene].GetScene().Close(app);
-	}
+	};
 	
 	
 	/**
@@ -353,7 +359,7 @@ var Lively3D = (function(Lively3D){
 	*/
 	Lively3D.GetCurrentSceneIndex = function(){
 		return CurrentScene;
-	}
+	};
 	
 
 	/**
@@ -501,7 +507,6 @@ var Lively3D = (function(Lively3D){
     
 		for ( var i in Applications){
       var icon = Scenes[CurrentScene].GetScene().CreateApplication(Applications[i].GetWindowObject().getContent().mesh_.material.map.image);
-      //icon.addEventListener("dblclick", iconOndblclick, Applications[i]);
       icon.addEventListener("dblclick", createIconOndblclick(Applications[i]));
       
       Applications[i].SetIcon(icon);
@@ -515,7 +520,7 @@ var Lively3D = (function(Lively3D){
 	*/
 	Lively3D.LoadCompleted = function(){
 		Lively3D.UI.ShowLoadCompleted();
-	}
+	};
 	
 	/**
 		Syncs dropbox-contents to local filesystem if local node.js application is running.
@@ -524,7 +529,7 @@ var Lively3D = (function(Lively3D){
 		Lively3D.Proxies.Local.CheckAvailability(function(){
 			Lively3D.Proxies.Local.Sync();
 		});
-	}
+	};
 	
 	/**
 		Loads Resources for application or scene.
@@ -540,20 +545,18 @@ var Lively3D = (function(Lively3D){
 				else if ( Lively3D.UI.HTTPServers.PROXY.inUse == true || Lively3D.UI.HTTPServers.NODE.inUse == true ){
 					Lively3D.FileOperations.LoadResources(App, resource);
 				}
-					
 			}
 		}
-			
 	};
 	
 	var username;
 	Lively3D.SetUsername = function(name){
 		username = name;
-	}
+	};
 	
 	Lively3D.GetUsername = function(){
 		return username;
-	}
+	};
 
 	return Lively3D;
 }(Lively3D));

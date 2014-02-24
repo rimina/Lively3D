@@ -30,39 +30,59 @@ SOFTWARE.
 		@namespace Functions for user interface.
 	*/
 	Lively3D.UI = {};
+  
 	Lively3D.UI.HTTPServers = {
 		LOCAL: { inUse: false },
 		NODE: { inUse: false },
 		PROXY: { inUse: true }
-	}
+	};
   
   Lively3D.UI.Dialogs = {
     loadState : null,
+    saveState : null,
     addApp : null,
     loadScene : null,
     about : null,
+    username : null,
     loadCompleted : null,
     menu : null,
     node : null,
     php : null
-  }
+  };
   
   Lively3D.UI.create = function(scene){
+     
+    var createLogInButtonClick = function(scene){
+      return function(event){
+        if(Lively3D.UI.Dialogs.username.fields[0].input.text.length > 0){
+          Lively3D.SetUsername(Lively3D.UI.Dialogs.username.fields[0].input.text);
+          Lively3D.UI.Dialogs.username.remove();
+         
+          scene.GetModel().show();
+          Lively3D.UI.Dialogs.menu.show();
+          console.log(Lively3D.UI.Dialogs.menu);
+        }
+      };
+    };
     
-    //MITEN TÄMÄ MENIKÄÄN?
-    var username = new WIDGET3D.Dialog({text : "Enter Username", buttonText : "Ok", color: 0xB6C5BE, opacity : 1.0});
+    var buttons = [];
+    buttons.push({text: "Log in", onclick: createLogInButtonClick(scene)});
+    var fields = [];
+    fields.push({description: "Username"});
     
-    Lively3D.WIDGET.cameraGroup.addChild(username, {x: 0, y: 0, z: -1300});
+    Lively3D.UI.Dialogs.username = new WIDGET3D.Dialog({
+      title : "Log in to Lively3D",
+      color : 0xB6C5BE,
+      opacity : 1.0,
+      buttons : buttons,
+      fields : fields,
+      width : 600,
+      height : 400
+    });
     
-    var okButtonOnclick = function(event, parameters){
-      if(parameters.dialog.textBox_.text_.length > 0){
-        Lively3D.SetUsername(parameters.dialog.textBox_.text_);
-        parameters.dialog.remove();
-        parameters.scene.show();
-        Lively3D.UI.Dialogs.menu.show();
-      }
-    }
-      
+    Lively3D.WIDGET.cameraGroup.add(Lively3D.UI.Dialogs.username);
+    Lively3D.UI.Dialogs.username.setPosition(0,0,-500);
+    
     var choices = [];
     choices.push({string : "Load Application", onclick: {handler : Lively3D.UI.ShowAppList}});
     choices.push({string : "Save Desktop", onclick: {handler : Lively3D.UI.ShowSaveDialog}});
@@ -73,44 +93,79 @@ SOFTWARE.
     choices.push({string : "About", onclick: {handler : Lively3D.UI.ShowAbout}});
     choices.push({string : "Sync for local usage", onclick: {handler : Lively3D.Sync}});
     
-    Lively3D.UI.Dialogs.menu = new WIDGET3D.SelectDialog({width : 1300, height : 3000, choices : choices, color: 0x527F76, opacity : 0.7});
+    Lively3D.UI.Dialogs.menu = new WIDGET3D.SelectDialog({width : 400, height : 800, choices : choices, color: 0x527F76, opacity : 0.7});
+    new WIDGET3D.DragControl(Lively3D.UI.Dialogs.menu, {
+      mouseButton : 2,
+      width : 800,
+      height : 1600
+    });
     
-    Lively3D.WIDGET.cameraGroup.addChild(Lively3D.UI.Dialogs.menu, {x: -2750, y: 0, z: -2900});
-    Lively3D.UI.Dialogs.menu.setRotationX(-Math.PI/100.0);
+    new WIDGET3D.RollControl(Lively3D.UI.Dialogs.menu, {
+      mouseButton : 2,
+      shiftKey : true
+    });
     
-    username.button_.addEventListener("click", okButtonOnclick, {dialog: username, scene : scene.GetModel() });
+    Lively3D.WIDGET.cameraGroup.add(Lively3D.UI.Dialogs.menu);
     
+    Lively3D.UI.Dialogs.menu.setPosition(-600, 0, -1200);
+    Lively3D.UI.Dialogs.menu.setRotationX(-Math.PI/60.0);
+
     createLoadCompleted();
     createAbout();
     Lively3D.UI.Dialogs.menu.hide();
+    scene.GetModel().hide();
     
-  }
+  };
   
   Lively3D.UI.createAppDialog = function(files){
+  
+    var createOnClick = function(app){
+      return function(event){
+        Lively3D.UI.LoadApplication(app);
+      };
+    };
+  
     var choices = [];
     for ( var i in files ){
       if ( files.hasOwnProperty(i)){
-        choices.push({string : files[i], onclick: {handler : Lively3D.UI.LoadApplication, parameters : files[i]}});
+        var onclick = createOnclick(files[i]);
+        choices.push({string : files[i], onclick: {handler : onclick}});
       }
     }
     Lively3D.UI.Dialogs.addApp = createListComponent(choices, "Select Application");
   };
   
   Lively3D.UI.createSceneDialog = function(files){
+  
+    var createOnClick = function(scene){
+      return function(event){
+        Lively3D.UI.LoadScene(scene);
+      }
+    };
+  
     var choices = [];
     for ( var i in files ){
       if ( files.hasOwnProperty(i)){
-        choices.push({string : files[i], onclick: {handler : Lively3D.UI.LoadScene, parameters : files[i]}});
+        var onclick = createOnclick(files[i]);
+        choices.push({string : files[i], onclick: {handler : onclick}});
       }
     }
     Lively3D.UI.Dialogs.loadScene = createListComponent(choices, "Select Skene");
   };
   
   Lively3D.UI.createStateDialog = function(files){
+  
+    var createOnClick = function(state){
+      return function(event){
+        Lively3D.UI.LoadDesktop(state);
+      }
+    };
+  
     var choices = [];
     for ( var i in files ){
       if ( files.hasOwnProperty(i)){
-        choices.push({string : files[i], onclick: {handler : Lively3D.UI.LoadDesktop, parameters : files[i]}});
+        var onclick = createOnclick(files[i]);
+        choices.push({string : files[i], onclick: {handler : onclick}});
       }
     }
     Lively3D.UI.Dialogs.loadState = createListComponent(choices, "Select Desktop");
@@ -128,39 +183,50 @@ SOFTWARE.
       var height = (3200/12)*choices.length;
     }
   
-    var dialog = new WIDGET3D.SelectDialog({width : 1000, height : height, choices : choices,
-      color: 0x527F76, opacity : 0.7, text : text, hasCancel : true});
-    Lively3D.WIDGET.cameraGroup.addChild(dialog, {x: 0, y: 0, z: -2400});
+    var dialog = new WIDGET3D.SelectDialog({
+      width : 1000,
+      height : height,
+      choices : choices,
+      color: 0x527F76,
+      opacity : 0.7,
+      text : text,
+      hasCancel : true
+    });
+    Lively3D.WIDGET.cameraGroup.add(dialog);
+    dialog.setPosition(0, 0, -2400);
     
     return dialog;
-  }
+  };
 	
   var createLoadCompleted = function(){
-    Lively3D.UI.Dialogs.loadCompleted = new WIDGET3D.Basic();
+    
     var texture = THREE.ImageUtils.loadTexture("images/loadCompleted.png");
     var material = new THREE.MeshBasicMaterial({ map: texture, color : 0x527F76, opacity : 1.0});
-    var mesh = new THREE.Mesh( new THREE.PlaneGeometry(2000, 500), material);
-
-    Lively3D.UI.Dialogs.loadCompleted.setMesh(mesh);
-    Lively3D.WIDGET.cameraGroup.addChild(Lively3D.UI.Dialogs.loadCompleted, {x: 0, y: 0, z: -2400});
+    var mesh = new THREE.Mesh( new THREE.PlaneGeometry(500, 100), material);
+    
+    Lively3D.UI.Dialogs.loadCompleted = new WIDGET3D.Widget(mesh);
+    Lively3D.WIDGET.cameraGroup.add(Lively3D.UI.Dialogs.loadCompleted);
+    Lively3D.UI.Dialogs.loadCompleted.setPosition(0,0,-500);
+    
     Lively3D.UI.Dialogs.loadCompleted.hide();
-  }
+  };
   
   var createAbout = function(){
-    Lively3D.UI.Dialogs.about = new WIDGET3D.Basic();
+    
     var texture = THREE.ImageUtils.loadTexture("images/about.png");
     var material = new THREE.MeshBasicMaterial({ map: texture, color : 0x527F76, opacity : 1.0});
-    var mesh = new THREE.Mesh( new THREE.PlaneGeometry(2000, 2000), material);
+    var mesh = new THREE.Mesh( new THREE.PlaneGeometry(500, 500), material);
+    Lively3D.UI.Dialogs.about = new WIDGET3D.Widget(mesh);
+    Lively3D.WIDGET.cameraGroup.add(Lively3D.UI.Dialogs.about);
+    Lively3D.UI.Dialogs.about.setPosition(0,0,-700);
 
-    Lively3D.UI.Dialogs.about.setMesh(mesh);
-    Lively3D.WIDGET.cameraGroup.addChild(Lively3D.UI.Dialogs.about, {x: 0, y: 0, z: -2400});
     Lively3D.UI.Dialogs.about.hide();
     
     var onclick = function(event, dialog){
-      dialog.hide();
+      Lively3D.UI.Dialogs.about.hide();
     }
-    Lively3D.UI.Dialogs.about.addEventListener("click", onclick, Lively3D.UI.Dialogs.about);
-  }
+    Lively3D.UI.Dialogs.about.addEventListener("click", onclick);
+  };
 	
   var choiceIndex = 5;
   /**
@@ -175,7 +241,7 @@ SOFTWARE.
     else{
       Lively3D.UI.Dialogs.menu.changeChoiceText("Toggle Node.js",choiceIndex);
     }
-	}
+	};
 	
 	/**
 		Enables usage of local web server. Functionality will be broken if web server is unavailable.
@@ -183,22 +249,23 @@ SOFTWARE.
 	Lively3D.UI.UseLocal = function(){
 		console.log("Going offline...");
 		Lively3D.UI.HTTPServers.LOCAL.inUse = true;
-	}
+	};
+  
 	/**
 		Enables usage of online resources.
 	*/
 	Lively3D.UI.UseOnline = function(){
 		console.log("Going online...");
 		Lively3D.UI.HTTPServers.LOCAL.inUse = false;
-	}
+	};
 	
 	/**
 		Shows notification about completing load process.
 	*/
 	Lively3D.UI.ShowLoadCompleted = function(){
     Lively3D.UI.Dialogs.loadCompleted.show();
-    setTimeout(function(){Lively3D.UI.Dialogs.loadCompleted.hide();}, 1500);
-	}
+    setTimeout(function(){Lively3D.UI.Dialogs.loadCompleted.hide(); console.log("hidden!")}, 1500);
+	};
 	
 	/**
 		Shows application list.
@@ -213,13 +280,13 @@ SOFTWARE.
 		else{
 			Lively3D.Proxies.Node.ShowAppList();
 		}
-	}
+	};
 	
 	/**
 		Loads applications.
 		@param app Application name.
 	*/
-	Lively3D.UI.LoadApplication = function(event, app){
+	Lively3D.UI.LoadApplication = function(app){
 		if ( Lively3D.UI.HTTPServers.LOCAL.inUse == true ){
 			Lively3D.Proxies.Local.LoadApplication(app);
 		}
@@ -230,7 +297,7 @@ SOFTWARE.
 			Lively3D.Proxies.Node.LoadApplication(app);
 		
 		}
-	}
+	};
 	
 	/**
 		Shows state list for current user.
@@ -245,7 +312,7 @@ SOFTWARE.
 		else{
 			Lively3D.Proxies.Node.ShowStateList();
 		}
-	}
+	};
 	
 	/**
 		Shows Scene list.
@@ -260,13 +327,13 @@ SOFTWARE.
 		else{
 			Lively3D.Proxies.Node.ShowSceneList();
 		}
-	}
+	};
 	
 	/**
 		Loads Scene.
 		@param scene Name of the scene.
 	*/
-	Lively3D.UI.LoadScene = function(event, scene){
+	Lively3D.UI.LoadScene = function(scene){
 		if ( Lively3D.UI.HTTPServers.LOCAL.inUse == true ){
 			Lively3D.Proxies.Local.LoadScene(scene);
 		}
@@ -277,7 +344,7 @@ SOFTWARE.
 			Lively3D.Proxies.Node.LoadScene(scene);
 		
 		}
-	}
+	};
 	
 	/**
 		Saves desktop state
@@ -293,13 +360,13 @@ SOFTWARE.
 		else{
 			Lively3D.Proxies.Node.SaveDesktop(filename);
 		}
-	}
+	};
 	
 	/**
 		Loads desktop state.
 		@param state Name of the state.
 	*/
-	Lively3D.UI.LoadDesktop = function(event, state){
+	Lively3D.UI.LoadDesktop = function(state){
 		if ( Lively3D.UI.HTTPServers.LOCAL.inUse == true ){
 			Lively3D.Proxies.Local.LoadDesktop(state);
 		}
@@ -316,26 +383,43 @@ SOFTWARE.
 		Shows dialog for saving desktop state. User enter state name in the dialog.
 	*/
 	Lively3D.UI.ShowSaveDialog = function(event){
-    var saveState = new WIDGET3D.Dialog({text : "State name:", buttonText : "Save", color: 0xB6C5BE, opacity: 1.0});
-    saveState.button_.addEventListener("click", Lively3D.UI.CloseSaveDialog, saveState);
-    Lively3D.WIDGET.cameraGroup.addChild(saveState, {x: 0, y: 0, z: -1300});
-	}
+
+    var fields = [];
+    fields.push({description : "State name"});
+    var buttons = [];
+    buttons.push({text : "Save", onclick: Lively3D.UI.CloseSaveDialog});
+    
+    Lively3D.UI.Dialogs.saveState = new WIDGET3D.Dialog({
+      color : 0xB6C5BE,
+      opacity : 1.0,
+      fields : fields,
+      buttons : buttons,
+      title : "Save Desktop",
+      width : 600,
+      height : 400,
+      hasCancel : true
+    });
+    
+    Lively3D.WIDGET.cameraGroup.add(Lively3D.UI.Dialogs.saveState);
+    Lively3D.UI.Dialogs.saveState.setPosition(0,0,-500);
+	};
 	
 	/**
 		Closes save dialog. If statename field contains string, Desktopstate is saved.
 	*/
-	Lively3D.UI.CloseSaveDialog = function(event, dialog){ 
-    if(dialog.textBox_.text_.length > 0){
-      Lively3D.UI.SaveDesktop(dialog.textBox_.text_);
-      dialog.remove();
+	Lively3D.UI.CloseSaveDialog = function(event){ 
+    if(Lively3D.UI.Dialogs.saveState.fields[0].input.text.length > 0){
+      Lively3D.UI.SaveDesktop(Lively3D.UI.Dialogs.saveState.fields[0].input.text);
+      Lively3D.UI.Dialogs.saveState.remove();
     }
-	}
+	};
 	
 	/**
 		Shows about dialog.
 	*/
 	Lively3D.UI.ShowAbout = function(event){
+    console.log("Show about!");
 		Lively3D.UI.Dialogs.about.show();
-	}
+	};
 	
 }(Lively3D));
