@@ -60,7 +60,6 @@ SOFTWARE.
          
           scene.GetModel().show();
           Lively3D.UI.Dialogs.menu.show();
-          console.log(Lively3D.UI.Dialogs.menu);
         }
       };
     };
@@ -108,7 +107,6 @@ SOFTWARE.
     Lively3D.WIDGET.cameraGroup.add(Lively3D.UI.Dialogs.menu);
     
     Lively3D.UI.Dialogs.menu.setPosition(-600, 0, -1200);
-    Lively3D.UI.Dialogs.menu.setRotationX(-Math.PI/60.0);
 
     createLoadCompleted();
     createAbout();
@@ -128,7 +126,7 @@ SOFTWARE.
     var choices = [];
     for ( var i in files ){
       if ( files.hasOwnProperty(i)){
-        var onclick = createOnclick(files[i]);
+        var onclick = createOnClick(files[i]);
         choices.push({string : files[i], onclick: {handler : onclick}});
       }
     }
@@ -146,7 +144,7 @@ SOFTWARE.
     var choices = [];
     for ( var i in files ){
       if ( files.hasOwnProperty(i)){
-        var onclick = createOnclick(files[i]);
+        var onclick = createOnClick(files[i]);
         choices.push({string : files[i], onclick: {handler : onclick}});
       }
     }
@@ -164,7 +162,7 @@ SOFTWARE.
     var choices = [];
     for ( var i in files ){
       if ( files.hasOwnProperty(i)){
-        var onclick = createOnclick(files[i]);
+        var onclick = createOnClick(files[i]);
         choices.push({string : files[i], onclick: {handler : onclick}});
       }
     }
@@ -174,18 +172,23 @@ SOFTWARE.
   var createListComponent = function(choices, text){
     
     if(choices.length == 1){
-      height = 3200/3;
+      var height = 240/3;
     }
-    else if(choices.length < 5){
-      var height = (3200/7)*choices.length;
+    else if(choices.length < 10){
+      var height = (240/5)*choices.length;
+      
+    }
+    else if (choices.length < 15){
+      var height = (240/14)*choices.length;
     }
     else{
-      var height = (3200/12)*choices.length;
+      var height = 285;
     }
-  
+    
     var dialog = new WIDGET3D.SelectDialog({
-      width : 1000,
+      width : 100,
       height : height,
+      depth : 2,
       choices : choices,
       color: 0x527F76,
       opacity : 0.7,
@@ -193,7 +196,8 @@ SOFTWARE.
       hasCancel : true
     });
     Lively3D.WIDGET.cameraGroup.add(dialog);
-    dialog.setPosition(0, 0, -2400);
+    dialog.setPosition(0, 0, -330);
+    dialog.setRotationX(-Math.PI/80.0);
     
     return dialog;
   };
@@ -201,7 +205,7 @@ SOFTWARE.
   var createLoadCompleted = function(){
     
     var texture = THREE.ImageUtils.loadTexture("images/loadCompleted.png");
-    var material = new THREE.MeshBasicMaterial({ map: texture, color : 0x527F76, opacity : 1.0});
+    var material = new THREE.MeshBasicMaterial({ map: texture, color : 0x527F76, opacity : 0.5});
     var mesh = new THREE.Mesh( new THREE.PlaneGeometry(500, 100), material);
     
     Lively3D.UI.Dialogs.loadCompleted = new WIDGET3D.Widget(mesh);
@@ -214,7 +218,7 @@ SOFTWARE.
   var createAbout = function(){
     
     var texture = THREE.ImageUtils.loadTexture("images/about.png");
-    var material = new THREE.MeshBasicMaterial({ map: texture, color : 0x527F76, opacity : 1.0});
+    var material = new THREE.MeshBasicMaterial({ map: texture, color : 0x527F76, opacity : 0.5});
     var mesh = new THREE.Mesh( new THREE.PlaneGeometry(500, 500), material);
     Lively3D.UI.Dialogs.about = new WIDGET3D.Widget(mesh);
     Lively3D.WIDGET.cameraGroup.add(Lively3D.UI.Dialogs.about);
@@ -264,7 +268,7 @@ SOFTWARE.
 	*/
 	Lively3D.UI.ShowLoadCompleted = function(){
     Lively3D.UI.Dialogs.loadCompleted.show();
-    setTimeout(function(){Lively3D.UI.Dialogs.loadCompleted.hide(); console.log("hidden!")}, 1500);
+    setTimeout(function(){Lively3D.UI.Dialogs.loadCompleted.hide();}, 1500);
 	};
 	
 	/**
@@ -418,7 +422,6 @@ SOFTWARE.
 		Shows about dialog.
 	*/
 	Lively3D.UI.ShowAbout = function(event){
-    console.log("Show about!");
 		Lively3D.UI.Dialogs.about.show();
 	};
 	

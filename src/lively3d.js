@@ -77,7 +77,7 @@ var Lively3D = (function(Lively3D){
     CreateApplication: function(appCanvas){
     
       var icon = new WIDGET3D.GridIcon({
-        picture : "../images/app.png",
+        /*img : "../images/app.png",*/
         color : 0x00EE55,
         parent : this.Model
       });
@@ -194,15 +194,16 @@ var Lively3D = (function(Lively3D){
     //creating application window
     var display = new WIDGET3D.TitledWindow({
       title : name, 
-      width  : 1700,
-      height : 1200,
+      width  : 500,
+      height : 500,
       material : material,
       defaultControls : true,
+      mouseButton : 2,
       override : true
     });
     
-    display.setPosition(0, 0, -1200);
     Lively3D.WIDGET.cameraGroup.add(display);
+    display.setPosition(0, 0, -800);
     
     //creating a scene specific icon for the application   
     var icon = Scenes[CurrentScene].GetScene().CreateApplication(canvas);
@@ -211,12 +212,13 @@ var Lively3D = (function(Lively3D){
     var createUpdateCallback = function(display){
       return function(){
         content = display.getContent();
-        if(content.mesh.material.map){
-          content.mesh.material.map.needsUpdate = true;
+        if(content.object3D.material.map){
+          content.object3D.material.map.needsUpdate = true;
         }
       }
     };
-    display.addUpdateCallback(createUpdateCallback(display));
+    var updateFunktion = createUpdateCallback(display);
+    display.addUpdateCallback(updateFunktion);
     
     //app window is hidden until the app is opened
     display.hide();
@@ -271,19 +273,21 @@ var Lively3D = (function(Lively3D){
     var content = window.getContent();
     
     if(parameters.callback){
-      //TODO: tarkasta tämä
-      var normalX = ((event.objectCoordinates.x - (-window.width  / 2.0)) / (window.width ));
-      var normalY = 1.0-((event.objectCoordinates.y - (-window.height / 2.0)) / (window.height));
       
-      var canvasWidth = content.mesh.material.map.image.width;
-      var canvasHeight = content.mesh.material.map.image.height;
+      var position = event.mousePositionIn3D.obj;
+      
+      var normalX = ((position.x - (-window.width  / 2.0)) / (window.width ));
+      var normalY = 1.0-((position.y - (-window.height / 2.0)) / (window.height));
+      
+      var canvasWidth = content.object3D.material.map.image.width;
+      var canvasHeight = content.object3D.material.map.image.height;
       
       var x = normalX * canvasWidth;
       var y = normalY * canvasHeight;
       
       var coords = [x, y];
       
-      var param = {"coord": coords, "canvas": content.mesh_.material.map.image, "event": event};
+      var param = {"coord": coords, "canvas": content.object3D.material.map.image, "event": event};
       
       parameters.callback(param);
     }
@@ -311,7 +315,7 @@ var Lively3D = (function(Lively3D){
     var content = object.getContent();
     if(object && events){
     
-      object.addEventListener("click", focus(app));
+      content.addEventListener("click", focus(app));
       
       for(var i in events){
         

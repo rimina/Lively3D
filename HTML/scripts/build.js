@@ -46,7 +46,7 @@ if ( helpGiven == true ){
 
 
 var srcFiles = {
-	Lively3D: [// "../../src/lively3d_application.js",
+	Lively3D: ["../../src/lively3d_application.js",
     "../../src/lively3d_scene.js",
     "../../src/lively3d_ui.js",
     "../../src/lively3d_proxies.js",
