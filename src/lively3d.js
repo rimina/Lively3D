@@ -55,6 +55,8 @@ var Lively3D = (function(Lively3D){
     
     Model: null,
     
+    CameraControls: null,
+    
     //creates the object related to scene and
     //initializes it to be ready for use
     Init: function(){
@@ -70,7 +72,7 @@ var Lively3D = (function(Lively3D){
       
       Lively3D.renderer.setClearColor(0xF0F0F0);
       
-      new WIDGET3D.FlyControl(Lively3D.WIDGET.cameraGroup);
+      this.CameraControls = new WIDGET3D.FlyControl(Lively3D.WIDGET.cameraGroup);
     },
     
     //creates a scene specific icon for the application
@@ -100,6 +102,7 @@ var Lively3D = (function(Lively3D){
     
     Remove: function(){
       this.Model.remove();
+      this.CameraControls.remove();
     }
     
 	};
