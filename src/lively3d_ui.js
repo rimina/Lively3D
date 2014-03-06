@@ -37,6 +37,12 @@ SOFTWARE.
 		PROXY: { inUse: true }
 	};
   
+  Lively3D.UI.colors = {
+    menus : 0xE3E3E3,//0x6E7B8B,//0xA2B5CD,
+    dialogs: 0xE8E8E8,
+    notifications: 0xA2B5CD
+  };
+  
   Lively3D.UI.Dialogs = {
     loadState : null,
     saveState : null,
@@ -71,16 +77,15 @@ SOFTWARE.
     
     Lively3D.UI.Dialogs.username = new WIDGET3D.Dialog({
       title : "Log in to Lively3D",
-      color : 0xB6C5BE,
-      opacity : 1.0,
+      color : Lively3D.UI.colors.dialogs,
       buttons : buttons,
       fields : fields,
-      width : 600,
-      height : 400
+      width : 200,
+      height : 150
     });
     
     Lively3D.WIDGET.cameraGroup.add(Lively3D.UI.Dialogs.username);
-    Lively3D.UI.Dialogs.username.setPosition(0,0,-500);
+    Lively3D.UI.Dialogs.username.setPosition(0,0,-200);
     
     var choices = [];
     choices.push({string : "Load Application", onclick: {handler : Lively3D.UI.ShowAppList}});
@@ -92,7 +97,7 @@ SOFTWARE.
     choices.push({string : "About", onclick: {handler : Lively3D.UI.ShowAbout}});
     choices.push({string : "Sync for local usage", onclick: {handler : Lively3D.Sync}});
     
-    Lively3D.UI.Dialogs.menu = new WIDGET3D.SelectDialog({width : 400, height : 800, choices : choices, color: 0x527F76, opacity : 0.7});
+    Lively3D.UI.Dialogs.menu = new WIDGET3D.SelectDialog({width : 160, height : 360, choices : choices, color: Lively3D.UI.colors.menus});
     new WIDGET3D.DragControl(Lively3D.UI.Dialogs.menu, {
       mouseButton : 2,
       width : 800,
@@ -106,7 +111,7 @@ SOFTWARE.
     
     Lively3D.WIDGET.cameraGroup.add(Lively3D.UI.Dialogs.menu);
     
-    Lively3D.UI.Dialogs.menu.setPosition(-600, 0, -1200);
+    Lively3D.UI.Dialogs.menu.setPosition(-240, 0, -420);
 
     createLoadCompleted();
     createAbout();
@@ -172,32 +177,32 @@ SOFTWARE.
   var createListComponent = function(choices, text){
     
     if(choices.length == 1){
-      var height = 240/3;
+      var height = 340/3;
     }
     else if(choices.length < 10){
-      var height = (240/5)*choices.length;
+      var height = (340/5)*choices.length;
       
     }
     else if (choices.length < 15){
-      var height = (240/14)*choices.length;
+      var height = (340/14)*choices.length;
     }
     else{
-      var height = 285;
+      var height = 360;
     }
     
     var dialog = new WIDGET3D.SelectDialog({
-      width : 100,
+      width : 160,
       height : height,
       depth : 2,
       choices : choices,
-      color: 0x527F76,
+      color: Lively3D.UI.colors.menus,
       opacity : 0.7,
       text : text,
       hasCancel : true
     });
     Lively3D.WIDGET.cameraGroup.add(dialog);
-    dialog.setPosition(0, 0, -330);
-    dialog.setRotationX(-Math.PI/80.0);
+    dialog.setPosition(0, 0, -420);
+    dialog.setRotationX(-Math.PI/100.0);
     
     return dialog;
   };
@@ -205,12 +210,12 @@ SOFTWARE.
   var createLoadCompleted = function(){
     
     var texture = THREE.ImageUtils.loadTexture("images/loadCompleted.png");
-    var material = new THREE.MeshBasicMaterial({ map: texture, color : 0x527F76, opacity : 0.5});
-    var mesh = new THREE.Mesh( new THREE.PlaneGeometry(500, 100), material);
+    var material = new THREE.MeshBasicMaterial({ map: texture, color : Lively3D.UI.colors.notifications});
+    var mesh = new THREE.Mesh( new THREE.PlaneGeometry(100, 20), material);
     
     Lively3D.UI.Dialogs.loadCompleted = new WIDGET3D.Widget(mesh);
     Lively3D.WIDGET.cameraGroup.add(Lively3D.UI.Dialogs.loadCompleted);
-    Lively3D.UI.Dialogs.loadCompleted.setPosition(0,0,-500);
+    Lively3D.UI.Dialogs.loadCompleted.setPosition(0,0,-150);
     
     Lively3D.UI.Dialogs.loadCompleted.hide();
   };
@@ -218,11 +223,11 @@ SOFTWARE.
   var createAbout = function(){
     
     var texture = THREE.ImageUtils.loadTexture("images/about.png");
-    var material = new THREE.MeshBasicMaterial({ map: texture, color : 0x527F76, opacity : 0.5});
-    var mesh = new THREE.Mesh( new THREE.PlaneGeometry(500, 500), material);
+    var material = new THREE.MeshBasicMaterial({ map: texture, color : Lively3D.UI.colors.notifications});
+    var mesh = new THREE.Mesh( new THREE.PlaneGeometry(100, 100), material);
     Lively3D.UI.Dialogs.about = new WIDGET3D.Widget(mesh);
     Lively3D.WIDGET.cameraGroup.add(Lively3D.UI.Dialogs.about);
-    Lively3D.UI.Dialogs.about.setPosition(0,0,-700);
+    Lively3D.UI.Dialogs.about.setPosition(0,0,-150);
 
     Lively3D.UI.Dialogs.about.hide();
     
@@ -394,18 +399,17 @@ SOFTWARE.
     buttons.push({text : "Save", onclick: Lively3D.UI.CloseSaveDialog});
     
     Lively3D.UI.Dialogs.saveState = new WIDGET3D.Dialog({
-      color : 0xB6C5BE,
-      opacity : 1.0,
+      color : Lively3D.UI.colors.dialogs,
       fields : fields,
       buttons : buttons,
       title : "Save Desktop",
-      width : 600,
-      height : 400,
+      width : 200,
+      height : 150,
       hasCancel : true
     });
     
     Lively3D.WIDGET.cameraGroup.add(Lively3D.UI.Dialogs.saveState);
-    Lively3D.UI.Dialogs.saveState.setPosition(0,0,-500);
+    Lively3D.UI.Dialogs.saveState.setPosition(0,0,-200);
 	};
 	
 	/**

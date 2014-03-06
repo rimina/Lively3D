@@ -52,44 +52,48 @@ var Lively3D = (function(Lively3D){
 	
 	var DefaultScene = {
 		Id:'mainscene',
-    
     Model: null,
-    
-    CameraControls: null,
+    SkySphere : null,
     
     //creates the object related to scene and
     //initializes it to be ready for use
     Init: function(){
+      var scene = WIDGET3D.getScene();
+
+      this.SkySphere = new THREE.Mesh(new THREE.SphereGeometry(500, 32, 32), new THREE.MeshBasicMaterial({color:/*0x7AA9DD*/0xC6E2FF, side: THREE.BackSide}));
+      scene.add(this.SkySphere);
+      scene.fog = new THREE.Fog( 0x8F8FBC, 20, 2000 );
+    
       this.Model = new WIDGET3D.GridWindow({
         width: 200,
         height: 200,
-        color: 0x003300,
+        color: 0x344152,
         defaultControls : true
       });
-      
-      this.Model.setPositionZ(-1000);
       Lively3D.WIDGET.mainWindow.add(this.Model);
       
-      Lively3D.renderer.setClearColor(0xF0F0F0);
-      
-      this.CameraControls = new WIDGET3D.FlyControl(Lively3D.WIDGET.cameraGroup);
+      Lively3D.WIDGET.cameraGroup.setPositionZ(450);
     },
     
     //creates a scene specific icon for the application
     CreateApplication: function(appCanvas){
-    
+
       var icon = new WIDGET3D.GridIcon({
-        /*img : "../images/app.png",*/
-        color : 0x00EE55,
+        img : appCanvas,
         parent : this.Model
       });
+      
+      var update = function(){
+        icon.material.map.needsUpdate = true;
+      }
+      
+      icon.addUpdateCallback(update);
       
       return icon;
     },
     
     //animatingfunction for scene
 		RenderingFunction: function(now, lastTime){
-      this.Model.update();
     },
     
     //scene specific operations that are done when app is opened
@@ -101,8 +105,18 @@ var Lively3D = (function(Lively3D){
 		},
     
     Remove: function(){
+      
+      //removing widgets
       this.Model.remove();
-      this.CameraControls.remove();
+      
+      //removing everything else
+      var scene = WIDGET3D.getScene();
+      scene.remove(this.SkySphere);
+      scene.fog = null;
+      
+      //reseting camera position and rotation
+      Lively3D.WIDGET.cameraGroup.setPosition(0, 0, 0);
+      Lively3D.WIDGET.cameraGroup.setRotation(0, 0, 0);
     }
     
 	};
@@ -197,16 +211,18 @@ var Lively3D = (function(Lively3D){
     //creating application window
     var display = new WIDGET3D.TitledWindow({
       title : name, 
-      width  : 500,
-      height : 500,
+      width  : 100,
+      height : 75,
       material : material,
       defaultControls : true,
       mouseButton : 2,
       override : true
     });
     
+    new WIDGET3D.RollControl(display, {mouseButton: 2, shiftKey: true});
+    
     Lively3D.WIDGET.cameraGroup.add(display);
-    display.setPosition(0, 0, -800);
+    display.setPosition(0, 0, -150);
     
     //creating a scene specific icon for the application   
     var icon = Scenes[CurrentScene].GetScene().CreateApplication(canvas);

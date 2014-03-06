@@ -30,10 +30,11 @@ var SphereScene = function(){
   
   this.Init = function(){
     
-    this.SkySphere = new THREE.Mesh(new THREE.SphereGeometry(60, 16, 16), new THREE.MeshBasicMaterial({color:0x30F030}));
+    this.SkySphere = new THREE.Mesh(new THREE.SphereGeometry(1500, 32, 32), new THREE.MeshBasicMaterial({color:0x483D8B, side: THREE.BackSide}));
     WIDGET3D.getScene().add(this.SkySphere);
+    WIDGET3D.getScene().fog = new THREE.Fog( 0xCDCCFF, 20.0, 600 );
   
-    var mesh = new THREE.Mesh(new THREE.SphereGeometry(60, 16, 16), new THREE.MeshBasicMaterial({color:0xF000FF}));
+    var mesh = new THREE.Mesh(new THREE.SphereGeometry(60, 16, 16), new THREE.MeshBasicMaterial({color:0xBCD2EE}));
     this.Model = new WIDGET3D.Group(mesh);
     Lively3D.WIDGET.mainWindow.add(this.Model);
   };
@@ -50,6 +51,7 @@ var SphereScene = function(){
     this.Model.remove();
     this.CameraControls.remove();
     WIDGET3D.getScene().remove(this.SkySphere);
+    WIDGET3D.getScene().fog = null;
   };
   
   this.Resources = {
